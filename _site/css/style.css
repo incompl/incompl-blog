@@ -1,0 +1,87 @@
+@font-face {
+  font-family: 'header';
+  src: url('http://incompl.com/fonts/OSP-DIN.ttf');
+}
+
+@font-face {
+  font-family: 'body';
+  src: url('http://incompl.com/fonts/luxisr.ttf');
+}
+
+body {
+  background-color: black;
+  color: #EAEAEA;
+  margin: 0;
+  padding: 0;
+  font-family: 'body';
+}
+
+h1, h2, h3 {
+  font-size: 2em;
+  font-family: header;
+}
+
+a:link {
+  color: #eaeaea;
+  background-color: #004345;
+  text-decoration: none;
+  text-shadow: 1px 1px 0 black;
+  padding: 0 1px 1px;
+}
+
+a:visited {
+  color: #eaeaea;
+  background-color: #363636;
+}
+
+a:active {
+  background-color: black;
+  color: white;
+}
+
+a:hover {
+  background-color: #00877C;
+  color: white;
+}
+
+.highlight, blockquote {
+  margin: 1em;
+  padding: 1px 1em;
+  background-color: #122526;
+}
+
+blockquote {
+  padding: .5em 1em;
+}
+
+#wrapper {
+  width: 700px;
+  margin: 0 auto;
+}
+
+.alignright {
+  float: right;
+}
+
+a.imgLink {
+  padding: 0;
+  background-color: transparent;
+}
+
+img {
+  margin: 1em;
+}
+
+.post {
+  margin: 0 1em 3em;
+}
+
+.author {
+  color: #888;
+  font-size: .8em;
+  float: right;
+}
+
+.pagination {
+  margin: 0 0 1em;
+}

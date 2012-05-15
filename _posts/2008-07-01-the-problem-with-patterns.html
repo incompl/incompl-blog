@@ -1,0 +1,62 @@
+--- 
+layout: post
+title: The Problem with Patterns
+published: true
+meta: 
+  _edit_last: "1"
+tags: 
+- design patterns
+- java
+- programming
+type: post
+status: publish
+---
+<a href="http://incompl.com/wp-content/uploads/2008/07/futurama28-medium1.jpg"><img class="alignright size-full wp-image-31" title="Poppler" src="http://incompl.com/wp-content/uploads/2008/07/futurama28-medium1.jpg" alt="There was also a problem with popplers, but it is not related." width="200" height="200" /></a>
+
+(Note: I later wrote <a href="http://incompl.com/2008/pattern-prone/">this post</a>, which comes to a better conclusion than this article did -Greg)
+
+I'm not a big fan of design patterns.  I know, I know, what could be bad about established processes for solving equally established problems?
+
+I'm not going to complain about misuse of design patterns.  I can roll my eyes at overuse of Singletons, but can't say overuse is the pattern's fault.  A lot of people misuse the Factory Method Pattern.  Sometimes people seem to just use this pattern for the hell of it, when a normal constructor would suffice.  Still, these people are Doing It Wrong, so it is their own fault.  I'm not even going to complain that people use patterns as an excuse to not really think through their problems and figure out the best thing to do.  Like I said: This is not what is wrong with design patterns.  This is what is wrong with bad programmers.
+
+So what is wrong with design patterns?  Let's start by analyzing a few examples.  I'm going to draw my examples from the ubiquitous <a href="http://www.amazon.com/Design-Patterns-Object-Oriented-Addison-Wesley-Professional/dp/0201633612/ref=pd_bbs_sr_1?ie=UTF8&amp;s=books&amp;qid=1214921430&amp;sr=8-1">Design Patterns: Elements of Reusable Object-Oriented Software</a>.
+
+Lets look at the <a href="http://en.wikipedia.org/wiki/Command_pattern">Command Pattern</a>.  In it "A command object encapsulates an action and its parameters."  I always call this the Functor Pattern, because I call these things Functors.
+
+In a lot of languages, this doesn't even constitute a design pattern.  The idea of functions as first-class objects, specifically functions that can be assigned to values, makes doing this a fundamental part of programming in that language.  For that reason, we can adjust the definition of the pattern:
+
+"A command object encapsulates an action and its parameters.  This is useful in languages that don't allow function values."
+
+Here is what is interesting: The pattern is not about programming.  It is about programming in this particular language.  In some other languages, the pattern is meaningless.
+
+Let's look at another example.   The <a href="http://en.wikipedia.org/wiki/Factory_method_pattern">Factory Method Pattern</a> is about hiding the concrete class of an object.  Look at this constructor (in Java):
+<pre>class DatabaseConnection {</pre>
+<pre>    public DatabaseConnection() {</pre>
+<pre>        ... do some set up work ...</pre>
+<pre>    }</pre>
+<pre>}</pre>
+Lets say we want to implement both MySqlDatabaseConnection and SqlServerDatabaseConnection.  But we want which one we use to be defined in a configuration file rather than in the code.  Normally you would create a constructor for each of these classes, but then, when you want to instantiate the database connection, you have to pick one.  You can't do this:
+<pre>class DatabaseConnection {</pre>
+<pre>    public DatabaseConnection() {</pre>
+<pre>        if (Config.getConfig().getDatabaseType().equals(DatabaseType.MYSQL)) {</pre>
+<pre>            return new MySqlDatabaseConnection();</pre>
+<pre>        }</pre>
+<pre>        ... else if etc ...</pre>
+<pre>    }</pre>
+<pre>}</pre>
+Doh!  Constructors have no return values, so this is just bogus, though it might seem like what you want to do.  The Factory pattern is the way to do this that actually works.
+
+But stop.  See what happened there?  We are using a design pattern because we can't do what we want to do.  If Java constructors worked a little differently, and let us construct an object of an arbitrary subtype of the type the constructor lives in, there would be no Factory pattern.
+
+As you begin to analyze the various established Design Patterns, you start to notice this type of thing more and more.  A lot of them solve problems that are imposed by the programming language you are using.  Some ways to recognize such patterns are:
+<ul>
+	<li>The pattern is too trivial to mention in a different programming language</li>
+	<li>The pattern results from being unable to do what seems naturally correct</li>
+</ul>
+Not all design patterns are like this.  The <a href="http://en.wikipedia.org/wiki/Flyweight_pattern">Flyweight Pattern</a>, for example, seems to basically reduce to optimizing the time-space trade-off of a group of many similar hashes.  This is more of a data structures thing than most Design Patterns seem to be.  It is also particularly interesting and useful, in my opinion.
+
+So, going to sum up and draw some conclusions.  It is no accident that Java is the language that brought Design Patterns to the forefront of our minds: It also is a language that loves to force you to do things in very particular ways, especially as opposed to simpler and more elegant languages.  Many design patterns emerged as ways to do things that aren't specifically considered in Java's Way Of Doing Things.  And that is what frustrates me about them: I'd really rather just use a language where it is easy to do what I want to get done.
+
+Of course, I'm not going to get into a discussion of the advantages of strictly constrained ways of doing things, or dynamic versus static typing, or anything like that.  Suffice it to say: I understand there are advantages.  However, these advantages don't do much to reconsile my enjoyment as a programmer.  And I admit: I'm a little selfish that way.
+
+By the way, the picture for this article is a <a href="http://en.wikipedia.org/wiki/The_Problem_with_Popplers">Poppler</a>.  There was a problem with them too, but it is not related to the problem discussed in this article.

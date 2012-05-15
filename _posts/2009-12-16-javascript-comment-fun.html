@@ -1,0 +1,23 @@
+--- 
+layout: post
+title: JavaScript Comment Fun
+published: false
+meta: 
+  Short Link: "517"
+  _edit_last: "1"
+tags: []
+
+type: post
+status: draft
+---
+Here is a little puzzle for you. Can you tell why this code is broken?
+<blockquote>
+<pre class="javascript">function allAs(str) {
+     /* old broken version
+     var r = /a*/;
+     */
+     var r = /^a*$/;
+     return str.match(r);
+}
+allAs("aaa") !== null; // true</pre>
+</blockquote>

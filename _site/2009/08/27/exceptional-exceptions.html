@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Exceptional Exceptions</title>
+    <link rel="icon" type="image/png" href="http://incompl.com/images/favicon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/code.css">
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <span class="author">
+        August 27, 2009
+      </span>
+      <h1><a href="/">incompl</a></h1>
+      <h2>Exceptional Exceptions</h2>
+      <div class="post">
+        <div class="entrybody">
+          <a href="http://incompl.com/wp-content/uploads/2009/08/wtf-coffee.jpg"><img class="alignright size-medium wp-image-411" title="wtf coffee" src="http://incompl.com/wp-content/uploads/2009/08/wtf-coffee-300x246.jpg" alt="wtf coffee" width="300" height="246" /></a>I've heard a lot of mantras regarding how to handle exceptions properly in programming languages that support checked exceptions (eg Java).  Sometimes these mantras are regarded a little too highly, even doing harm in some situations.  I'd like to dissect a couple of these.
+<h2><span style="text-decoration: line-through;">Never</span> Sometimes catch the top-level "Exception" class.</h2>
+There are times when it is definitely appropriate.  Imagine some controller code in a web application.  An underlying system has produced an unexpected exception.  Controller code can't do anything to fix it, but allowing the exception to continue up the call stack would cause a <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes#5xx_Server_Error">500 error</a>.  Catching any thrown exception can allow the Controller to do something better, like output a message to the user notifying them of the error and making a suggestion on what to do next.
+
+In short, catch the top-level Exception class if you know for sure that every thrown exception will be handled more poorly by your caller than you can handle it, and you can't improve the caller's behavior.
+<h2><span style="text-decoration: line-through;">Always</span> When appropriate catch the most  specific exceptions thrown.</h2>
+Catching the most specific exceptions thrown is meant to create error handling specific to the problem that was raised.  For example, a "DatabaseConnectionLost" exception would be caught, and in the catch block the connection would be repaired.  It seems reasonable to always want to do this, but in practice, some exceptions are thrown in cases where you can't do anything about it.  Lets say a method throws "DatabaseConnectionLost" and "DatabaseQueryInvalid", both of which are children of "DatabaseException."  In a situation where the calling code can't repair the connection or fix the query, catching the parent is appropriate, rather than handling each specific case without anything specific to do.  If the code can do something like email the DBA, catching DatabaseException seems useful.
+
+In short, you should always catch the most specific exceptions that you can actually do something about.
+<h2>Never leave a catch block empty (if you can help it)</h2>
+This is actually one of those rare never-ism that I'm OK with.  But sadly, when interfacing with poorly thought out code, sometimes you are forced to do this.
+
+Lets say you want to create User objects and add them all to a list, and you know their IDs.  You can get users by ID from a piece of library code that you cannot change.  However, you cannot check if a user ID is valid: there is no method for it.  Further, the getUser method throws UserIdInvalidException when you try to get a user by an invalid ID.  For you, an invalid ID is not an exceptional circumstance, but the library code assumes it is.  Sadly you might be forced to write something like this:
+<blockquote>
+<pre>for (id : userIds) {</pre>
+<pre>    try {</pre>
+<pre>        users.add(UserLib.getUser(id));</pre>
+<pre>    }</pre>
+<pre>    catch (UserIdInvalidException e) {</pre>
+<pre>        // If ID is invalid don't include it on the list</pre>
+<pre>    }</pre>
+<pre>}</pre>
+</blockquote>
+It is very rare that you actually can't find a better way.  For the most part, consider a catch block like this to be a mistake unless proven otherwise.
+<h2>Conclusion</h2>
+Forget all these "always" and "never" rules.  A rule to live by would read more like this:  Exceptions should always be handled as best they can by the code best suited to handle them.
+
+[<a href="http://www.flickr.com/photos/bitzcelt/399136360/">Image credit</a>] 
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+--- 
+layout: post
+title: Checking JavaScript Function Argument Types
+published: true
+meta: 
+  Short Link: "935"
+  _edit_last: "1"
+  _wp_old_slug: ""
+tags: 
+- programming
+type: post
+status: publish
+---
+The <em><a href="https://developer.mozilla.org/en/JavaScript/Reference/Operators/Special_Operators/typeof_Operator">typeof</a></em> operator in JavaScript can be a little misleading. Here is an example of using it to check the type of a function argument.
+{% highlight javascript %}function foo(str) {
+    if (typeof str === "string") {
+        return "foo " + str;
+    }
+    else {
+        throw "Can only foo a string";
+    }
+}
+foo("dog") === "foo dog"; // true{% endhighlight %}
+So far so good. However, in JavaScript a "String" can be either a value <em>or</em> a String object. What happens if we pass in a String object?
+{% highlight javascript %}foo(new String("dog")) === "foo dog"; // exception thrown!{% endhighlight %}
+Woops! That is definitely not what we want.
+
+Sadly, there is nothing built into JavaScript that is perfect for this situation. But consider the following alternative. This version was borrowed from  <a href="http://dmitry.baranovskiy.com/post/typeof-and-friends">Dmitry Baranovskiy</a> but there are a few similar functions around the net.
+{% highlight javascript %}function is(o, type) {
+    type = String(type).toLowerCase();
+    return (type == "null" && o === null) ||
+           (type == typeof o) ||
+           (type == "object" && o === Object(o)) ||
+           (type == "array" && Array.isArray && Array.isArray(o)) ||
+           Object.prototype.toString.call(o).slice(8, -1).toLowerCase()
+           == type;
+}{% endhighlight %}
+Let's rewrite our <em>foo</em> function using this new <em>is </em>function.
+{% highlight javascript %}function foo(str) {
+    if (is(str, "string")) {
+        return "foo " + str;
+    }
+    else {
+        throw "Can only foo a string";
+    }
+}
+foo("dog") === "foo dog"; // true
+foo(new String("dog")) === "foo dog"; // true{% endhighlight %}
+Now we're getting what we want! As with <a href="http://javascript.crockford.com/prototypal.html">object instantiation</a>, this is a case where what's built into the language just doesn't cut it, but if you understand what you'd prefer and why, you can definitely get what you need.

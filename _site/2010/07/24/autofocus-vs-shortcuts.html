@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Autofocus vs. Shortcuts</title>
+    <link rel="icon" type="image/png" href="http://incompl.com/images/favicon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/code.css">
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <span class="author">
+        July 24, 2010
+      </span>
+      <h1><a href="/">incompl</a></h1>
+      <h2>Autofocus vs. Shortcuts</h2>
+      <div class="post">
+        <div class="entrybody">
+          <a href="http://incompl.com/wp-content/uploads/2010/07/shortcut.jpg"><img class="alignright size-full wp-image-928" title="Shortcut" src="http://incompl.com/wp-content/uploads/2010/07/shortcut.jpg" alt="A photograph of a street sign that reads &quot;Short Cut&quot;" width="146" height="320" /></a>
+<p>
+I was reading <a href="http://books.alistapart.com/product/html5-for-web-designers">HTML5 for Web Designers</a> and was reminded again of the interesting debate about autofocus and keyboard shortcuts. If you're unfamiliar, autofocus is a JavaScript technique for automatically putting the cursor in a particular form element when a user visits a web page. This happens when you visit <a href="http://www.google.com/">Google</a>: notice that you can just start typing without manually clicking in the search box first.
+</p><p>
+The concern that many people have is that autofocus impedes the use of certain keyboard shortcuts. Awhile ago on Twitter I noticed that <a href="http://perfectionkills.com/">Juriy Zaytsev</a> (a prolific JavaScript blogger and <a href="http://www.prototypejs.org/">Prototype.js</a> core developer)  <a href="http://twitter.com/kangax/status/15114069104">said</a> that autofocus breaks the <em>backspace</em> button, which is a shortcut for <em>back</em>. In the aforementioned book I'm reading, the author suggests that you should think long and hard before using autofocus, since it breaks use of the <em>space</em> key to scroll down the page. In both cases, autofocus causes these keys to type or delete in the selected form element instead of executing the shortcut's intended function.
+</p><p>
+It's a shame that these prominent folks are dissuading people from using autofocus. Autofocus really is a time-saver. The real problem is <strong>bad keyboard shortcuts</strong>.
+</p><p>
+Keyboard shortcuts that are too likely to confuse the user and produce the wrong result are a bad idea. I'd argue that using <em>backspace</em> or <em>spacebar</em> as a keyboard shortcut is almost as harmful as using <em>p</em> or <em>b</em>. <em>Keys that indicate that the user may be trying to type something should not be used as shortcuts</em>. Unless paired with one of alt, control, option, etc.
+</p><p>
+The good news is that although there are some very common but very bad keyboard shortcuts available, you don't have to use them. If you want to stop being bothered by autofocus, I have found that Firefox, Opera, Chrome, and Safari all support <em>command-[</em> as an alternative to <em>backspace</em> that works even if a form element has focus. Further, <em>fn-downarrow</em> is a good alternatives to <em>spacebar</em> for scrolling down.
+</p><p>
+Start using good keyboard shortcuts! It'll keep you sane, and let web designers make use of helpful features like autofocus!
+</p><p>
+<a href="http://www.flickr.com/photos/matt_lee/418275873/">[image credit]</a>
+</p><p>
+<em>Note: All keyboard shortcuts tested on a Mac only. Though I assume in Windows you have similar options.</em>
+</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

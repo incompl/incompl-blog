@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>XHTML Lists</title>
+    <link rel="icon" type="image/png" href="http://incompl.com/images/favicon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/code.css">
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <span class="author">
+        May 22, 2008
+      </span>
+      <h1><a href="/">incompl</a></h1>
+      <h2>XHTML Lists</h2>
+      <div class="post">
+        <div class="entrybody">
+          This one caught me off guard.  I was converting a document to XHTML strict and had a list and sub-list that looked like this:
+<pre>&lt;ul&gt;</pre>
+<pre>    &lt;li&gt; Thing 1 &lt;/li&gt;</pre>
+<pre>    &lt;ul&gt;</pre>
+<pre>        &lt;li&gt; Subthing 1 &lt;/li&gt;</pre>
+<pre>        &lt;li&gt; Subthing 2 &lt;/li&gt;</pre>
+<pre>    &lt;/ul&gt;</pre>
+<pre>    &lt;li&gt; Thing 2 &lt;/li&gt;</pre>
+<pre>&lt;/ul&gt;</pre>
+Understandably, XHTML isn't keen on a child of a <em>ul </em>being something other than a <em>li</em>.   So the logical fix is this:
+<pre>&lt;ul&gt;</pre>
+<pre>    &lt;li&gt; Thing 1 &lt;/li&gt;</pre>
+<pre>    &lt;li&gt;</pre>
+<pre>        &lt;ul&gt;</pre>
+<pre>            &lt;li&gt; Subthing 1 &lt;/li&gt;</pre>
+<pre>            &lt;li&gt; Subthing 2 &lt;/li&gt;</pre>
+<pre>        &lt;/ul&gt;</pre>
+<pre>    &lt;/li&gt;</pre>
+<pre>    &lt;li&gt; Thing 2 &lt;/li&gt;</pre>
+<pre>&lt;/ul&gt;</pre>
+This creates a mysterious problem.  Your list ends up looking like this:
+
+<a href="http://incompl.com/wp-content/uploads/2008/05/weirdlisthtml.png"><img class="alignnone size-full wp-image-5" title="Weird List" src="http://incompl.com/wp-content/uploads/2008/05/weirdlisthtml.png" alt="A strange-looking list" width="145" height="97" /></a>
+
+Yep, a little odd.  This happens, it turns out, because XHTML expects the sub-list <em>li</em> to contain some text, just like any <em>li</em>.  This becomes the <em>li</em> that corresponds to the sub-list you are creating, which normally is just the <em>li </em>before the sub-list you are making.  So, our fixed markup looks like this:
+<pre>&lt;ul&gt;</pre>
+<pre>    &lt;li&gt; Thing 1</pre>
+<pre>        &lt;ul&gt;</pre>
+<pre>            &lt;li&gt; Subthing 1 &lt;/li&gt;</pre>
+<pre>            &lt;li&gt; Subthing 2 &lt;/li&gt;</pre>
+<pre>        &lt;/ul&gt;</pre>
+<pre>    &lt;/li&gt;</pre>
+<pre>    &lt;li&gt; Thing 2 &lt;/li&gt;</pre>
+<pre>&lt;/ul&gt;</pre>
+Now we have a list that looks like what we expected:
+
+<a href="http://incompl.com/wp-content/uploads/2008/05/normallist.png"><img class="alignnone size-full wp-image-6" title="Normal list" src="http://incompl.com/wp-content/uploads/2008/05/normallist.png" alt="A normal looking list" width="145" height="102" /></a>
+
+Ultimately, this feels like a problem with XHTML to me.  The broken behavior we saw seems like it should be outright invalid XHTML, but it is not, according to my validator at least.  In the meantime, if you fall into this trap, hopefully you'll remember what to do.
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

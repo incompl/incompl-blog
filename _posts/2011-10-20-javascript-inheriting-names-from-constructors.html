@@ -1,0 +1,31 @@
+--- 
+layout: post
+title: "JavaScript: Inheriting names from constructors"
+published: true
+meta: 
+  Short Link: "1132"
+  _edit_last: "1"
+tags: 
+- programming
+type: post
+status: publish
+---
+Over the course of a project I'm working on I've run into a few really weird JavaScript behaviors. This is one of them. It only happens with the <em>name</em> property, probably because of how names are handled for constructor functions.
+{% highlight javascript %}function Foo() {}
+
+// This should be Object.prototype, or {}, or omitted completely,
+// but certainly not the Object constructor. Still, what follows
+// isn't exactly what you'd expect...
+Foo.prototype = Object;
+
+var foo = new Foo();
+
+function Bar() {}
+
+Bar.prototype = foo;
+
+var bar = new Bar();
+
+bar.name = 'hello';
+
+bar.name // 'hello' in chrome, 'Object' in firefox{% endhighlight %}

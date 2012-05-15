@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>My Favorite WMP Bug</title>
+    <link rel="icon" type="image/png" href="http://incompl.com/images/favicon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/code.css">
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <span class="author">
+        April 10, 2009
+      </span>
+      <h1><a href="/">incompl</a></h1>
+      <h2>My Favorite WMP Bug</h2>
+      <div class="post">
+        <div class="entrybody">
+          Found a very interesting bug in Windows Media Player (WMP).  An embedded player will fail to play if the URL of the page it is embedded into is too long.
+
+This is fun because you can see this on any website.  I have only tried this in Firefox and Internet Explorer 7 on Windows, but compare these URLs:
+
+<a href="http://www.mediacollege.com/video/format/windows-media/streaming/embed-examples.html">Page with short URL</a>
+
+<a href="http://www.mediacollege.com/video/format/windows-media/streaming/embed-examples.html?&amp;query=%E6%94%BE%E4%B8%8B%E8%BA%AB%E6%AE%B5%E8%83%BD%E5%AE%9E%E6%96%BD%E5%B0%B1%E8%83%BD%E5%A4%9F%E6%8&amp;query=%E6%94%BE%E4%B8%8B%E8%BA%AB%E6%AE%B5%E8%83%BD%E5%AE%9E%E6%96%BD%E5%B0%B1%E8%83%BD%E5%A4%9F%E6%8&amp;query=%E6%94%BE%E4%B8%8B%E8%BA%AB%E6%AE%B5%E8%83%BD%E5%AE%9E%E6%96%BD%E5%B0%B1%E8%83%BD%E5%A4%9F%E6%8&amp;query=%E6%94%BE%E4%B8%8B%E8%BA%AB%E6%AE%B5%E8%83%BD%E5%AE%9E%E6%96%BD%E5%B0%B1%E8%83%BD%E5%A4%9F%E6%8&amp;query=%E6%94%BE%E4%B8%8B%E8%BA%AB%E6%AE%B5%E8%83%BD%E5%AE%9E%E6%96%BD%E5%B0%B1%E8%83%BD%E5%A4%9F%E6%8">Same page with long URL parameters added</a>
+
+The WMP APIs are pretty embarrassing, but for me, this one takes the cake.
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

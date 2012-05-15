@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>incompl</title>
+    <link rel="icon" type="image/png" href="http://incompl.com/images/favicon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/code.css">
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <h1><a href="/">incompl</a></h1>
+      
+  <h2 class="title"><a href="/2010/05/06/uploading-large-files-in-ruby-on-rails.html">Uploading Large Files in Ruby on Rails</a></h2> 
+<div class="post post-/2010/05/06/uploading-large-files-in-ruby-on-rails">
+  <div class="entrybody">
+    <p>
+File upload is a common feature for web sites, yet for some reason a lot of frameworks make it hard on you. <a href="http://en.wikipedia.org/wiki/JavaServer_Faces">JSF</a> doesn't even support it by default; it requires the installation of additional libraries.
+</p><p>
+In Ruby on Rails it worked pretty well out of the box, but with a catch. File uploads are stored in memory, so if you are letting users upload large files, the server will quickly run out of memory.
+</p><p>
+To solve this I discovered a new (as of 2.3) component of Rails called <a href="http://weblog.rubyonrails.org/2008/12/17/introducing-rails-metal">Metal</a>. Metal is a thin wrapper around <a href="http://rack.rubyforge.org/">Rack</a>, a minimal piece of middleware that handles HTTP requests for Rails. While Metal is a part of Rails, it lets you bypass Rails for the most part, and work at a lower level for those performance-critical bits. Happily, Metal lets you grab an uploaded file without making a copy of it in memory.
+</p><p>
+Here is an example of a Metal class that does file upload. To test this you'd just need to throw it in a <em>/app/metal</em> directory for your Rails project, then navigate to <em>http://example.com/uploadtest</em> to try it out.
+</p>
+<div class="highlight"><pre><code class="ruby"><span class="k">class</span> <span class="nc">Uploadtest</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">env</span><span class="o">[</span><span class="s2">&quot;PATH_INFO&quot;</span><span class="o">]</span> <span class="o">=~</span> <span class="sr">/^\/uploadtest$/</span>
+
+      <span class="n">request</span> <span class="o">=</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Request</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+
+      <span class="c1"># Get temp file from request</span>
+      <span class="c1"># Format: {:filename, :type, :name, :tempfile, :head}</span>
+      <span class="n">file</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">[</span><span class="s2">&quot;file&quot;</span><span class="o">]</span> 
+
+      <span class="c1"># Make sure we have the parameter</span>
+      <span class="k">if</span> <span class="o">!</span><span class="n">file</span><span class="o">.</span><span class="n">nil?</span>
+
+        <span class="c1"># Create new file path</span>
+        <span class="n">directory</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;uploads&quot;</span><span class="p">,</span> <span class="s2">&quot;uploadtest&quot;</span><span class="p">)</span>
+        <span class="no">FileUtils</span><span class="o">.</span><span class="n">mkpath</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">file</span><span class="o">[</span><span class="ss">:filename</span><span class="o">]</span><span class="p">)</span>
+
+        <span class="c1"># Copy the uploaded file</span>
+        <span class="no">FileUtils</span><span class="o">.</span><span class="n">cp</span> <span class="n">file</span><span class="o">[</span><span class="ss">:tempfile</span><span class="o">].</span><span class="n">path</span><span class="p">,</span> <span class="n">path</span>
+
+        <span class="c1"># Response</span>
+        <span class="o">[</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span> <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="s2">&quot;text/html&quot;</span><span class="p">},</span> <span class="o">[</span><span class="s2">&quot;Upload Complete&quot;</span><span class="o">]]</span>
+
+      <span class="k">else</span>
+        <span class="c1"># Show an example submission form</span>
+        <span class="o">[</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span> <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="s2">&quot;text/html&quot;</span><span class="p">},</span>
+              <span class="o">[</span><span class="s1">&#39;&amp;lt;form method=&quot;post&quot;</span>
+<span class="s1">                      action=&quot;/uploadtest&quot;</span>
+<span class="s1">                      enctype=&quot;multipart/form-data&quot;&amp;gt;</span>
+<span class="s1">                &amp;lt;input type=&quot;file&quot; name=&quot;file&quot;/&amp;gt;</span>
+<span class="s1">                &amp;lt;input type=&quot;submit&quot; value=&quot;Upload&quot;/&amp;gt;</span>
+<span class="s1">                &amp;lt;/form&amp;gt;&#39;</span><span class="o">]]</span>
+      <span class="k">end</span>
+    <span class="k">else</span>
+      <span class="o">[</span><span class="mi">404</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span> <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="s2">&quot;text/html&quot;</span><span class="p">},</span> <span class="o">[</span><span class="s2">&quot;Not Found&quot;</span><span class="o">]]</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>
+I hope this helps someone who runs into the same situation I was in!
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/04/27/eating-alone.html">Eating Alone</a></h2> 
+<div class="post post-/2010/04/27/eating-alone">
+  <div class="entrybody">
+    <a href="http://incompl.com/wp-content/uploads/2010/04/reuben-sandwich.jpg"><img class="alignright size-medium wp-image-839" title="Reuben Sandwich" src="http://incompl.com/wp-content/uploads/2010/04/reuben-sandwich-300x199.jpg" alt="Photo of a Reuben sandwich" width="300" height="199" /></a>
+<p>
+Have you ever been to a restaurant by yourself? Taco Bell doesn't count. Somebody asked you "How many people in your party?" and you said "One."
+</p><p>
+Let's say I'm walking home from work and I want a hot tasty <a href="http://en.wikipedia.org/wiki/Reuben_sandwich">Reuben</a>. I can go to the grocery store, buy the ingredients, assemble the sandwich, heat up the griddle, and make it myself. But why should I? There are probably at least 10 places I walk past on my way home from work that serve this sandwich. I've decided to have dinner out.
+</p><p>
+But alas, I'm alone. I could call a few friends and see who is up for dinner, but I'm too hungry to wait, and quite frankly, maybe I just want to stare into space and daydream while I eat. I do it all day at work, why mess with success?
+</p>
+Given that I'm on my own, there are only a few types of places where I can go.
+<h2>Go casual</h2>
+If an eatery is sufficiently casual then eating alone there may not be a <em>faux pas</em>. How much the casual venue affects your ability to enjoy the meal depends on what you're after. My bases are covered if I want a deli sandwich or a Double Quarter Pounder with cheese. If I want rare filet mignon with seared asparagus and Gorgonzola mashed potatoes, this option won't help me.
+<h2>At the bar</h2>
+Due to the stigma surrounding drinking alone, you have to be careful here. It's hard to explain exactly when this is acceptable. There are some bars that just feel more comfortable for eating by yourself. The staff may or may not be amenable to your behavior. If the bar is empty, you just look depressing. If the bar is full, you're getting in the way when people are trying to order another round of Michelob Ultras. Sometimes when I intend to eat by myself I'll walk past a few bars to try to find one where I feel like I'd be comfortable.
+<h2>Takeout</h2>
+I've found that you can get takeout from pretty much anywhere. Delivery is a major service for a venue to offer, but pick-up doesn't inconvenience most venues in any way, so they seem happy to oblige. Though readily accessible, this option has more downs than ups. Your food may be cold by the time you get around to eating it, you won't get to enjoy the restaurant's ambiance, and it's difficult to time the pickup.
+<p>
+OK, so there are options. But why the rigmarole? Why is it socially unacceptable to go to dinner by yourself? I guess I can see a few possibilities...
+</p>
+<h2>The Venues</h2>
+Maybe guests by their lonesome just aren't lucrative enough. A duo can split an appetizer and a bottle of wine, but a single guest is generally limited to a single drink and entrée. Then again, are solo eaters really discouraged by the venues proper? I haven't tried to go to a fancy restaurant by myself. What would happen?
+<h2>Personal Appearance</h2>
+Maybe people are just self-conscious about being alone. Restaurants are a place for people to go and enjoy themselves. What is better than enjoying a nice hot meal and a few drinks with some friends? Why <em>wouldn't</em> you bring a few buddies? That person at the table alone, playing Scrabble against the computer on their iPhone, what's their problem? No friends? Are they so obnoxious/ridden with body odor that they... <em>have no friends</em>?
+<p>
+In any case, let's fix this. Go to a restaurant by yourself. Order the <em>duckling à l'orange</em> and a stiff martini and treat yourself right. If we all do it, it's no longer socially unacceptable. So, folks: get on it.
+</p>
+<a href="http://www.flickr.com/photos/lifeontheedge/2285192687/">[image credit]</a>
+
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/04/12/april-link-dump.html">April Link Dump</a></h2> 
+<div class="post post-/2010/04/12/april-link-dump">
+  <div class="entrybody">
+    <h2><a href="http://www.flickr.com/photos/avlxyz/313854298/"><img class="alignright" title="Delicious Oysters" src="http://farm1.static.flickr.com/101/313854298_98f9c02ba1.jpg" alt="Some delicious oysters" width="267" height="201" /></a></h2>
+<h2>Fun / Interesting</h2>
+<p>
+<a href="http://www.slate.com/id/2248998/">It's OK for vegans to eat oysters</a>. I really respect this pragmatic approach to ethics. Plus, oysters are damned delicious.
+</p><p>
+<a href="http://mrdoob.com/projects/harmony/">Harmony</a> drawing tool. Great way to spend a few minutes when you need to get the creative juices flowing.
+</p><p>
+Vodka is often disregarded as "neutral" or "flavorless" but I've found that vodkas vary more than I once thought. This is <a href="http://voices.washingtonpost.com/all-we-can-eat/spirits/how-would-you-describe-vodka.html">one of the few treatises I've found on the subject</a>.
+</p>
+<h2>Art</h2>
+<p>
+A neat street art series by "<a href="http://www.thisisludo.com/">Ludo</a>" called <a href="http://twistedsifter.com/2009/12/natures-revenge-ludo/">Nature's Revenge</a>.
+</p><p>
+<a href="http://theimpossiblecool.tumblr.com/post/500782628/cocker">The Impossible Cool</a>. Simple, classic, black-and-white photos of famous actors, authors, and so on.
+</p><p>
+<a href="http://gorillaartfare.com/">Gorilla Artfare</a> is a great art blog, backed by a very creative (closed-doored) community.
+</p><p>
+<a href="http://interfacelift.com/wallpaper_beta/downloads/rating/widescreen/2560x1600/">InterfaceLIFT</a> lets you view wallpapers for a given screen resolution. I really wish other sites where I get wallpaper, such as <a href="http://www.deviantart.com/">Deviantart</a>, would do this.
+</p><p>
+<a href="http://www.notcot.org/">Notcot</a> is an interesting art / design blog. Their thumbnail-centric format is something that would sound like an awful idea if you described to me, but they pull it off.
+</p>
+<h2>Technology</h2>
+<p>
+<a href="http://www.rememberthemilk.com/services/iphone/app/"><img class="alignright" title="RTM" src="http://1.static.rememberthemilk.com/img/services/ss_iphoneapp.png" alt="A screen shot of the Remember the Milk iPhone app" width="200" height="116" /></a>
+</p><p>
+<a href="http://www.rememberthemilk.com/">Remember the Milk</a>. A comprehensive to-do list organizational tool. It's $25/year, but their iPhone app is really nice. I appreciate touches like being able to choose what the app badge represents (total due items, or items due today).
+</p><p>
+<a href="http://www.marco.org/380868888">Feature checklists suck</a>. Glad someone took the time to properly bash them so I don't have to.
+</p><p>
+I always have trouble finding good starting point themes for blog designs. I think I'll try out <a href="http://themeshaper.com/thematic/">Thematic</a> for my next Wordpress project.
+</p><p>
+A presentation about <a href="http://www.slideshare.net/reed2001/culture-1798664">Netflix's corporate policies and culture</a>. As surprising as it is inspiring. For example, they did away with vacation day policies, and just let people just take days off at will.
+</p><p>
+<a href="http://www.flickr.com/photos/avlxyz/313854298/">[image credit] </a>
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/04/02/the-menu-key.html">The Menu Key</a></h2> 
+<div class="post post-/2010/04/02/the-menu-key">
+  <div class="entrybody">
+    <a href="http://incompl.com/wp-content/uploads/2010/04/keyboard1.jpg"><img class="alignright size-full wp-image-790" title="Menu key" src="http://incompl.com/wp-content/uploads/2010/04/keyboard1.jpg" alt="The menu key on a standard keyboard" width="301" height="231" /></a>
+<p>
+Do you use your keyboard's <a href="http://en.wikipedia.org/wiki/Menu_key">Menu key</a>? The one with a picture of a menu and a cursor. All it does is bring up the <a href="http://en.wikipedia.org/wiki/Context_menu">context menu</a>. It was introduced at the same time as the <a href="http://en.wikipedia.org/wiki/Windows_key">Windows key</a> but didn't get the same press, probably because its effect couldn't compare to the indignity of having a Windows logo affixed to nigh every computer user's keyboard, their choice of OS notwithstanding.
+</p><p>
+What good is this thing in practice? For awhile I figured this would be an awesome way to correct typos while typing, since the context menu has corrections. Mistype, menu key, enter, keep typing. But alas, spell checkers notice misspellings after the word has lost focus, so the Menu key isn't really practical for this use.
+</p><p>
+So what is this thing for? Does anyone use their Menu key? Was it just another button to add to already-overcrowded keyboards along with the overwhelmingly useful ones like "open web browser" and "shut down"? Maybe that's why the delightfully simple <a href="http://en.wikipedia.org/wiki/File:Apple-wireless-keyboard-aluminum-2007.jpg">Apple keyboards</a> don't have it?
+</p><p>
+<a href="http://en.wikipedia.org/wiki/File:Wireless_Media_Center_keyboard_FK-760.JPG">[Image Credit]</a>
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/03/31/the-greatest-outfit.html">The Greatest Outfit</a></h2> 
+<div class="post post-/2010/03/31/the-greatest-outfit">
+  <div class="entrybody">
+    Today I asked myself a question that every man must ask himself once in awhile. If I were to buy a sweet outfit on the Internet, and money was no object, what would I buy? Here is my answer to that question.
+<h2>Balmain Shirt</h2>
+<a class="imgLink" href="http://incompl.com/wp-content/uploads/2010/03/Balmain-shirt-1625.jpg"><img class="size-medium wp-image-769" title="Balmain shirt 1625" src="http://incompl.com/wp-content/uploads/2010/03/Balmain-shirt-1625-200x300.jpg" alt="A torn up shirt" width="200" height="300" /></a>
+<p>$1625</p>
+
+Honestly this part is going to be covered up so it's just for comfort. The ventilation is what makes it.
+<h2>Dsquared Shorts</h2>
+<a class="imgLink" href="http://incompl.com/wp-content/uploads/2010/03/dsquare-shorts-555.png"><img class="size-medium wp-image-770" title="dsquare shorts 555" src="http://incompl.com/wp-content/uploads/2010/03/dsquare-shorts-555-174x300.png" alt="Boxer denim short things" width="174" height="300" /></a>
+<p>$555</p>
+
+Denim shorts have long been a bold way of saying "I give up" but Dsquared is bringing them back. The fix? Turn them into 90% boxers.
+<h2>Damir Doma Oversized Black Semi-Sheer Zip Through 'Ovum' Jumpsuit with distinctive Damir Doma tape detailing</h2>
+<a class="imgLink" href="http://incompl.com/wp-content/uploads/2010/03/Damir-Doma-Oversized-Black-Semi-SHeer-Zip-Through-ovum-jumpsuit-with-distinctive-Damir-Doma-tape-detailing-2657-21.png"><img class="size-medium wp-image-771" title="Damir Doma Oversized Black Semi-SHeer Zip Through 'ovum' jumpsuit with distinctive Damir Doma tape detailing 2657 21" src="http://incompl.com/wp-content/uploads/2010/03/Damir-Doma-Oversized-Black-Semi-SHeer-Zip-Through-ovum-jumpsuit-with-distinctive-Damir-Doma-tape-detailing-2657-21-137x300.png" alt="I'm having trouble even describing this" width="137" height="300" /></a>
+<p>$2657.21</p>
+
+Now this item is all about aesthetics. Though this guy is swimming in it, I'm completely sure this will be a perfect complement to my body type.
+<h2>Raf Simmons Boots</h2>
+<a class="imgLink" href="http://incompl.com/wp-content/uploads/2010/03/Raf-Simmons-940.jpg"><img class="size-medium wp-image-773" title="Raf Simmons 940" src="http://incompl.com/wp-content/uploads/2010/03/Raf-Simmons-940-300x300.jpg" alt="Black boots with a bunch of copper buckles" width="300" height="300" /></a>
+<p>$940</p>
+<p style="text-align: left;">Now I admit I am not a boot connoisseur but I know the trend right now is boots with a lot of buckles. This offering from Raf Simmons seemed like a good number of buckles for my money.</p>
+
+<h2>A Bathing Ape Teriyaki Source Sunglasses</h2>
+<a class="imgLink" href="http://incompl.com/wp-content/uploads/2010/03/bathing-ape-teriyaki-source.jpg"><img class="size-medium wp-image-774" title="bathing ape teriyaki source" src="http://incompl.com/wp-content/uploads/2010/03/bathing-ape-teriyaki-source-300x135.jpg" alt="" width="300" height="135" /></a>
+<p>???</p>
+<p style="text-align: left;">Now these are just awesome. Actually, you know, this post is supposed to be satirical. These sunglasses are too legitimately awesome. I'm going to have to go with something else.</p>
+
+<h2>Martin Margiela Mono Lens</h2>
+<a class="imgLink" href="http://incompl.com/wp-content/uploads/2010/03/martin-margiela-mono-lense-447-60.png"><img class="size-medium wp-image-775" title="martin margiela mono lense 447 60" src="http://incompl.com/wp-content/uploads/2010/03/martin-margiela-mono-lense-447-60-300x183.png" alt="Sunglasses, with *only one lens*" width="300" height="183" /></a>
+<p>$447.60</p>
+<p style="text-align: left;">That's better.</p>
+
+<h2>The Outfit</h2>
+<p style="text-align: left;">Alright, great picks, but how does it look? Here we go:</p>
+<p style="text-align: left;"><a class="imgLink" href="http://incompl.com/wp-content/uploads/2010/03/outfit.jpg"><img class="aligncenter size-medium wp-image-777" title="outfit" src="http://incompl.com/wp-content/uploads/2010/03/outfit-200x300.jpg" alt="An ineffable outfit" width="200" height="300" /></a></p>
+<p style="text-align: left;">Total cost:  $6224.80</p>
+<p style="text-align: left;">A man can dream, can't he?</p>
+
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/03/12/to-print-no-more.html">To Print No More</a></h2> 
+<div class="post post-/2010/03/12/to-print-no-more">
+  <div class="entrybody">
+    <a href="http://incompl.com/wp-content/uploads/2010/03/HP_DeskJet_500.jpg"><img class="alignright size-medium wp-image-761" title="HP DeskJet 500" src="http://incompl.com/wp-content/uploads/2010/03/HP_DeskJet_500-300x210.jpg" alt="Picture of an old HP DeskJet 500 printer" width="300" height="210" /></a>
+<p>
+When I threw out my last printer, I didn't realize that it would be my last. I had it in the back of my mind that I would eventually replace it. This was years ago. It has finally dawned on me that I'll never own a printer again. Printers have become obsolete for me, and I didn't even notice.
+</p><p>
+For awhile I'd have an occasional a panic: Oh crap! I need to print these concert tickets. Well, maybe I can just show them the confirmation email on my phone. Yep, it works. Anyone who requires physical tickets will mail them to you.
+</p><p>
+Oh no! I have to print tickets for my flight tomorrow. Nope. Swipe your credit card at the kiosk and your boarding passes are spat out instantly.
+</p><p>
+Every time I thought I needed a printer, I was wrong. Clearly things are only going to get more digital from here on out, so I don't think this is going to change.  Sure, some printers must exist. The world isn't done with them yet. But I sure am.
+</p><p>
+I'll call this post my eulogy for the home printer. My first printer, affectionately known as "The Blizzard," printed out many a fine computer science homework assignment for me. Well, I could have just printed them in the lab, but still. It was fun while it lasted.
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/02/18/incubators.html">Incubators</a></h2> 
+<div class="post post-/2010/02/18/incubators">
+  <div class="entrybody">
+    <a href="http://incompl.com/wp-content/uploads/2010/02/coffee.jpg"><img class="alignright size-full wp-image-749" title="Coffee" src="http://incompl.com/wp-content/uploads/2010/02/coffee.jpg" alt="A picture of a mug of coffee" width="203" height="209" /></a>
+<p>
+Robert Biswas-Diener wrote <a href="http://www.cnn.com/2010/LIVING/worklife/02/16/o.procrastinator.or.incubator/index.html?hpt=Mid">an article on CNN</a> coining the term "incubator" for people who seem like procrastinators but are actually a different breed. I felt that this article described my own work habits perfectly.
+</p><p>
+Incubators have a clear sense of deadlines, gets things done on time, and produce quality work. Before performing an important task, such as writing a term paper, they engage in an incubation phase that is necessary for their process. It looks like slacking off, but their mind is constantly brewing, preparing information for the outpouring of effort to come.
+</p><p>
+I always knew that I work this way, and that other people are like me. What I like about this article, though, is that Robert decided to give a name to it. From the article:
+</p>
+<blockquote>For most incubators, having a label that is less pejorative than "procrastinator" can be a breath of fresh air.</blockquote>
+<p>
+<a href="http://www.flickr.com/photos/deapeajay/3046121538/">[image credit]</a>
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/02/11/buzz-makes-waves.html">Buzz makes Waves</a></h2> 
+<div class="post post-/2010/02/11/buzz-makes-waves">
+  <div class="entrybody">
+    <a href="http://incompl.com/wp-content/uploads/2010/02/gbuzz.png"><img class="alignright size-full wp-image-717" title="Google Buzz" src="http://incompl.com/wp-content/uploads/2010/02/gbuzz.png" alt="The Google Buzz logo" width="286" height="68" /></a>
+<p>
+Google just introduced a new product called <a href="http://google.com/buzz">Buzz</a>. I'll save you a lengthy explanation of the service since you've probably already heard it, but basically it is a status tool like <a href="http://twitter.com">Twitter</a> with better media and service integration.
+</p><p>
+It feels like this is a long time coming, due to the popularity of Twitter and the existence of another competitor's<a href="http://buzz.yahoo.com/"> similar product with the same name</a>. But this move seems to have confused a few people. What does this mean for <a href="https://wave.google.com/wave/">Wave</a>?
+</p><p>
+While I've heard some opinions that Buzz is the replacement for a failed Wave, I think the opposite is true. <a href="http://www.google.com/search?client=opera&amp;rls=en&amp;q=wave+replace+email&amp;sourceid=opera&amp;ie=utf-8&amp;oe=utf-8">Displacing email with Wave</a> is a long-term strategy for a daunting task. Further, Wave is still being developed and is only in the "preview" phase. It is too soon to judge its success.
+</p>
+<a href="http://incompl.com/wp-content/uploads/2010/02/a-pretty-wave.jpg"><img class="alignright size-medium wp-image-719" title="a pretty wave" src="http://incompl.com/wp-content/uploads/2010/02/a-pretty-wave-293x300.jpg" alt="A picture of a wave. An actual wave, not a web service." width="234" height="240" /></a>
+<p>
+Buzz seems to be more of a transition than a replacement. Completely switching from email (even Gmail) to Wave is nearly impossible in a world so reliant on email to do, well, everything. Buzz, on the other hand, does a better job sitting alongside email (quite literally) as an enhancement. It doesn't replace email, it expands it to do a lot of what Wave does.
+</p><p>
+More people will adopt Buzz than Wave at this point in the game, and it will nicely teach them the new communication model. Wave won't seem so foreign anymore. And don't be surprised if you see Buzz integrated into Wave too. Switching to Wave will be much easier if many of your existing conversations come along with you.
+</p><p>
+I'm very interested in seeing how this plays out, since <a href="http://en.wikipedia.org/wiki/Email#Problems">email is badly broken</a> and it is time for the Internet to get an upgrade.
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/02/09/february-link-dump.html">February Link Dump</a></h2> 
+<div class="post post-/2010/02/09/february-link-dump">
+  <div class="entrybody">
+    <h2>Art</h2>
+<a href="http://incompl.com/wp-content/uploads/2010/02/chase3.jpg"><img class="alignright size-medium wp-image-686" title="Feb 2010 link dump space ships." src="http://incompl.com/wp-content/uploads/2010/02/chase3-300x230.jpg" alt="Some space ships." width="300" height="230" /></a>
+<p>
+The <a href="http://portfolio.tigaer-design.com/port_flash.html">portfolio of Christian Hecker</a> has sci-fi concept hardware and environments.
+</p><p>
+As does the <a href="http://koshime.cgsociety.org/gallery/477931/">portfolio of Dr. CM Wong</a>.
+</p><p>
+I've been listening to <a href="http://www.friskyradio.com/">Frisky Radio</a> at work a lot. It's electronic dance music with an emphasis on progressive house and tech house.
+</p><p>
+I like these <a href="http://www.webdesignerdepot.com/2009/11/mind-blowing-hyperrealistic-sculptures/">hyperrealistic sculptures</a>. The <a href="http://en.wikipedia.org/wiki/Hyperrealism_(painting)">hyperrealism movement</a> as a whole is fascinating to me.
+</p><p>
+<a href="http://www.empiricstudio.com/ ">Interesting vintage products for your home</a>. Check out the "unusual objects" section.
+</p>
+<h2>Web Design</h2>
+<img class="alignleft size-medium wp-image-688" title="Acorn" src="http://incompl.com/wp-content/uploads/2010/02/acheader-300x182.png" alt="Screen shot of Acorn image editor" width="300" height="182" />
+<p>
+<a href="http://flyingmeat.com/acorn/">Acorn</a> is a great Mac image editor, with free and $50 versions. I feel like I'm late to the game on this one, but I only recently gave up on the frustrating Mac ports of <a href="http://www.gimp.org/">GIMP</a>.
+</p><p>
+Turn your Macbook's track pad into a pen tablet with <a href="http://tenonedesign.com/inklet.php">Inklet</a>.
+</p><p>
+<a href="http://diveintomark.org/archives/2009/11/02/why-do-we-have-an-img-element">The origin of the HTML img tag</a>, as proposed in 1993.
+</p><p>
+I always have at least one <a href="http://www.noupe.com/fonts/45-outstanding-free-vintage-fonts.html">free font site</a> bookmarked for these link dumps.
+</p>
+<h2>Programming</h2>
+<a href="http://incompl.com/wp-content/uploads/2010/02/love-docs.png"><img class="alignright size-medium wp-image-691" title="LOVE docs" src="http://incompl.com/wp-content/uploads/2010/02/love-docs-300x257.png" alt="An excerpt from the LOVE documentation" width="300" height="257" /></a>
+<p>
+I haven't used <a href="http://love2d.org/docs/">LÖVE</a>, a framework for making 2d  games in Lua, but their simple and well-documented API makes it sound  really appealing.
+</p><p>
+Speaking of game development frameworks, <a href="http://unity3d.com/unity/">Unity</a> recently released a free version of their very comprehensive and mature  3d game development platform.
+</p><p>
+<a href="http://nodejs.org/">Nodejs</a> lets you write a web server in JavaScript with event-based IO. I have a  few projects in mind that might be good guinea pigs for this framework.
+</p><p>
+A <a href="http://daringfireball.net/2009/11/liberal_regex_for_matching_urls">liberal regex for matching URLs</a>. The URL syntax is too complex for most half-assed patterns to be sufficient.
+</p><p>
+Checking if a JavaScript object is an Array is actually not simple. Here is <a href="http://perfectionkills.com/instanceof-considered-harmful-or-how-to-write-a-robust-isarray/">an analysis and useful solution</a>.
+</p><p>
+Here is some <a href="http://www.aaronsw.com/weblog/hiring">advice on hiring programmers</a>. I've felt since the beginning of my career that the typical interview process is deeply flawed, but am only recently getting an idea of what I'd rather do instead.
+</p>
+<h2>Useful</h2>
+<p>
+<a href="http://geoipweather.com/">My preferred weather site</a>. Can the cluttered and unhelpful <a href="http://weather.com">weather.com</a> just give up their domain name to them?
+</p><p>
+There is a lot of software to record audio playing on your computer. So far I think <a href="http://www.rogueamoeba.com/audiohijackpro/">Audio Hijack Pro</a> works the best for me.
+</p><p>
+If you have anything on your computer that should be encrypted, but isn't, set up <a href="http://www.truecrypt.org/">TrueCrypt</a> right away.
+</p>
+<h2>Fun</h2>
+<p>
+<img class="alignleft" title="VVVVVV" src="http://thelettervsixtim.es/images/pic1.png" alt="Screen shot of the VVVVVV game." width="304" height="141" />
+</p><p>
+The oddly-named <a href="http://thelettervsixtim.es/">VVVVVV</a> is a nice  puzzle/platform game that reminds me of other independent concept  platformers like <a href="http://www.braid-game.com/">Braid</a>.
+</p><p>
+<a href="http://www.captainforever.com/captainforever.php">Captain Forever</a> is a simple but engaging game that lets you salvage parts and upgrade your ship in real time as you play against bigger and more complex adversaries.
+</p><p>
+A <a href="http://samizdat.cc/cyoa/">comprehensive analysis</a> of the choose-your-own-adventure style of interactive fiction, along with novels you can read along with a visualization of your progress through the decision tree.
+</p><p>
+<a href="http://inform7.com/">Inform</a> is a surprisingly interesting development environment for <a href="http://en.wikipedia.org/wiki/Zork">Zork</a>-like interactive fiction.
+</p>
+<h2>More</h2>
+<img class="alignright size-medium wp-image-697" title="Unskippable" src="http://incompl.com/wp-content/uploads/2010/02/unskippable-300x86.png" alt="The Unskippable logo" width="300" height="86" />
+<p>
+<a href="http://www.escapistmagazine.com/videos/view/unskippable/1338-Dragon-Age-Origins">Unskippable</a> is a funny <a href="http://en.wikipedia.org/wiki/Mst3k">MST3K</a>-like series humorously commenting on video game introductions.
+</p><p>
+An <a href="http://harvardmagazine.com/2009/11/professionalization-in-academy?page=0,3">interesting article</a> about the problems with making the world of graduate education more practical.
+</p><p>
+<a href="http://www.tweetnotebook.com/">TweetNoteBook</a> is silly, but I want one.
+</p><p>
+Ever dreamed of <a href="http://universesandbox.com/">making galaxies collide</a> in the comfort of your own home?
+</p><p>
+A good overview of the <a href="http://www.valetmag.com/living/food-drink/2010/the-united-states-of-vodka.php">American craft vodka</a> scene.
+</p><p>
+Cracked <a href="http://www.cracked.com/article/158_5-irrational-fears-even-rational-people-have/">continues</a> to be an <a href="http://www.cracked.com/article/195_7-things-good-parents-do-that-screw-kids-up-life_p2">interesting</a> source of <a href="http://www.cracked.com/blog/how-to-watch-the-jay-leno-show/">information</a>.
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/02/04/in-defense-of-the-man-purse.html">In Defense of the Man Purse</a></h2> 
+<div class="post post-/2010/02/04/in-defense-of-the-man-purse">
+  <div class="entrybody">
+    <p>
+The man purse. The <em>murse</em>. This oft-reviled accessory should, judging by its function, enjoy ubiquity among the possession-conveying public. Incomprehensibly, it is a taboo of sorts. Well, it's 2010. This year, nothing is sacred. Not even society's most enduring conventions.
+</p><p>
+What defines a man purse, anyway? One would think that it would be a purse worn by a man, but oftentimes the stately messenger bag, when perceived to be sufficiently emasculating in style or stature, is considered a man purse as well. This broader category may be the intent of the term "man bag" but I will use the terms interchangeably here. We're all in this together.
+</p><p>
+To be entirely clear, here is a picture of myself with my second-favorite manpurse.
+</p><p>
+<img class="size-medium wp-image-638" title="Me with Bag" src="http://incompl.com/wp-content/uploads/2010/01/me-with-bag-109x300.jpg" alt="A boy and his bag." width="109" height="300" />
+</p><p>
+A Man
+</p><p>
+Look at this stately man. Note the splendor. Why, surely nothing is amiss here.
+</p><p>
+Yet still the eyes of many see the above as analogous to what follows:
+</p><p>
+<img class="size-full wp-image-621  " title="Girl Purse" src="http://incompl.com/wp-content/uploads/2010/01/ggl50.jpg" alt="Girl Man with Girl Man Purse" width="230" height="300" />
+</p><p>
+Slightly Misleading
+</p><p>
+That's right. Small bags are for <em>ladies</em>.
+</p><p>
+Forget it. The sexes are equal now. Men can wear little bags, and women can wear cowboy hats.
+</p><p>
+<img class="size-full wp-image-623 " title="Cowgirl" src="http://incompl.com/wp-content/uploads/2010/01/400px-Georgian_Cowgirl.jpg" alt="A woman with a cowboy hat." width="218" height="300" />
+</p><p>
+Social Progress
+</p><p>
+Let's say you appreciate that attire does not define your sexuality. Kudos! But you're still not convinced of the man purse's practicality. Let me show you what I have in my bag today.
+</p><p>
+<img class="size-medium wp-image-642" title="Bag Contents" src="http://incompl.com/wp-content/uploads/2010/02/Mobile-Photo-Feb-4-2010-9-09-08-AM1-300x219.jpg" alt="The surprise inside" width="300" height="219" />
+</p><p>
+Items
+</p><p>
+Glasses, sunglasses, headphones, book, pen. Sometimes there will be a hat and gloves, outgoing mail, and other such sundries. This is the very image of convenience and efficiency. A backpack, briefcase, or messenger bag would be excessive. The additional bulk would be an uncomfortable addition. On the other hand, simply stuffing the pockets of a coat would be insufficient and, I dare say, unsightly.
+</p><p>
+Further, there are altruistic reasons to sport the man purse. On a public subway, for example, space is at a premium. As you stuff your body and possessions into a crowded train, behind you there may be a <em>human being</em> whose truancy could have resulted from your selfish use of a bulky bag.
+</p><p>
+<img class="size-full wp-image-626  " title="Backpack" src="http://incompl.com/wp-content/uploads/2010/01/485px-Rucksack_Schweizer_Armee_1960er_a.jpg" alt="A backpack" width="243" height="300" />
+</p><p>
+Not a human being
+</p><p>
+I trust this convinces any but the most bigoted of naysayers. And to those who need no converting: Right on. But still, while it might feel like the world is your oyster, every time you take a swig of water from the bottle in your bag you must remember those who sacrificed their dignity to earn you that privilege. They are mankind's greatest heroes.
+</p>
+  </div>
+</div>
+
+
+<div class="pagination">
+  
+  <a href="/page1" class="previous">Previous</a>
+  
+  <span class="page_number ">Page: 2 of 8</span>
+  
+  <a href="/page3" class="next ">Next</a>
+  
+</div>
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+--- 
+layout: post
+title: Catching jQuery AJAX JSON Parse Error
+published: true
+meta: 
+  Short Link: "959"
+  _edit_last: "1"
+  _wp_old_slug: ""
+tags: 
+- programming
+type: post
+status: publish
+---
+<p>
+Today I found an interesting bug in my jQuery code. My app was reporting "You are offline: check your Internet connection" but Firebug was reporting the 200 success status code for the request. Turns out that I had a syntax error in the JSON file I was pulling down. Fair enough, that is certainly an error, it's just that my log message was wrong. So I went into my <a href="http://api.jquery.com/ajaxError/"><em>ajaxError</em></a> function to fix it.
+</p><p>
+Here is where I got a bit confused. Though <em>ajaxError</em> has several helpful arguments, none of them seemed to identify when a JSON parse error had occurred. After Googling around a bit, I found <a href="http://www.maheshchari.com/jquery-ajax-error-handling/">a helpful example</a> of the <a href="http://api.jquery.com/jQuery.ajaxSetup/"><em>ajaxSetup</em></a> function. <em>ajaxSetup</em> lets you define an error function too. At first I assumed this was the same as <em>ajaxError</em>, but it turns out that the <em>ajaxSetup</em> error function is called, then the <em>ajaxError</em> function is called, on each AJAX error.
+</p><p>
+More importantly, the error function defined in <em>ajaxSetup</em> does more to identify the source of the problem. Here is the gist of the code I ended up writing:
+</p>
+{% highlight javascript %}$.ajaxSetup({
+    error:function(x, e){
+        if (x.status === 0){
+            journal.post("You are offline.", "bad");
+        }
+        else if(x.status === 404){
+            journal.post("404 file not found error", "bad");
+        }
+        else if(x.status === 500){
+            journal.post("500 internal server error", "bad");
+        }
+        else if(e === 'parsererror'){
+            journal.post("200 but can't parse json response", "bad");
+        }
+        else if(e === 'timeout'){
+            journal.post("Request timed out.", "bad");
+        }
+        else {
+            journal.post("Unknown AJAX error", "bad");
+        }
+    }
+});{% endhighlight %}

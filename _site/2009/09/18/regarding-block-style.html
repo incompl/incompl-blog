@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Regarding Block Style</title>
+    <link rel="icon" type="image/png" href="http://incompl.com/images/favicon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/code.css">
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <span class="author">
+        September 18, 2009
+      </span>
+      <h1><a href="/">incompl</a></h1>
+      <h2>Regarding Block Style</h2>
+      <div class="post">
+        <div class="entrybody">
+          <a href="http://incompl.com/wp-content/uploads/2009/09/374961356_4ea13e95e1.jpg"><img class="alignright size-full wp-image-462" title="374961356_4ea13e95e1" src="http://incompl.com/wp-content/uploads/2009/09/374961356_4ea13e95e1.jpg" alt="374961356_4ea13e95e1" width="194" height="200" /></a>I went to a great talk by Douglas Crockford today. If you're a JavaScript programmer and haven't read any of his articles, head over to <a href="http://crockford.com">his site</a> and get started. It's more important than reading this blog.  Seriously.
+
+Alright. I want to show an example he used that doesn't seem to be included in any of his articles online. This may not be exactly the same, but is close to how I remember it.
+
+Everyone argues about where to put the starting curly-brace of a block.  Usually they don't have any substantial cause to pick one over the other, but everyone agrees one technique should be used consistently in a given program.  There is a reason to choose one style over the other in JavaScript. Check out this example:
+<blockquote>
+<pre>function test1() {
+    return {
+        foo: "bar"
+    };
+}
+
+function test2()
+{
+    return
+    {
+        foo: "bar"
+    };
+}
+
+alert(test1() === undefined); // false
+alert(test2() === undefined); // true</pre>
+</blockquote>
+These two functions appear to only differ in their formatting.  Surprised by these results?
+
+The first function does exactly what it looks like it should. In the second, 4 different language design problems cause the program to do something unexpected while providing no errors.
+<ol>
+	<li><a href="http://en.wikipedia.org/wiki/JavaScript_syntax#Whitespace_and_semicolons">Semi-colon insertion</a> causes the <em>return</em> to be a <em>return;</em></li>
+	<li>A line that starts with <em>{</em> starts a block. There is no block-level scope, so in this case the block does nothing. This "feature" is only there because <a href="http://en.wikipedia.org/wiki/C_(programming_language)">C</a> has it.</li>
+	<li>The<em> foo: </em>looks like part of an object literal, but we're in a block, not an object literal. This should be an error, right? No, it's a label. Even though we're not in code where a label could do anything, such as a <em>for</em> loop.</li>
+	<li>The rest of the line after the label is the value "bar". A value by itself counts as a statement, even though it doesn't do anything.</li>
+</ol>
+Wow. That function does something wildly different than what it appears to do. The point Crockford was making here was that in JavaScript, unlike in most languages, preferring the first type of curly-brace placement helps you avoid mistakes like this one.
+
+He also mentioned that <a href="http://jslint.com/">JSLint</a>,  his free JavaScript code quality tool, is able to pick up on this kind of mistake. Try running my example through it!
+
+<a href="http://www.flickr.com/photos/lifeontheedge/374961356/">[Image Credit]</a>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

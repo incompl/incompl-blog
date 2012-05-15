@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>JavaScript: The deal with ===</title>
+    <link rel="icon" type="image/png" href="http://incompl.com/images/favicon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/code.css">
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <span class="author">
+        June 19, 2008
+      </span>
+      <h1><a href="/">incompl</a></h1>
+      <h2>JavaScript: The deal with ===</h2>
+      <div class="post">
+        <div class="entrybody">
+          <p>Most people don't seem to use the === operater in JavaScript.  Some lists of JavaScript operators don't even include it.  It is not as useless as the community's negligence would suggest.  There are times when it can be used to write more precise code.   So what does it do, anyway?</p>
+<p>== asks: Are these the same value?  ("500" == 500) is true though one is a string and one is a number.<br />
+=== asks: Are these the same type <strong>and</strong> the same value?  (500 === 500) is true, but the above is not.<br />
+Both operators ask: "Are these the same object?" in the case of object comparison.</p>
+<p>Some of the implications are subtle.</p>
+<p>Primatives and the objects that represent them are different types with the same value.<br />
+(5 == new Number(5)) is true.<br />
+(5 === new Number(5)) is false.</p>
+<p>Undefined and null are different types but have the same value.<br />
+(null == undefined) is true.<br />
+(null === undefined) is false.</p>
+<p>False has the same value as primatives that evaluate to false.<br />
+(false == 0) is true.<br />
+(false === 0) is false.</p>
+<p>True does <strong>not</strong> have the same value as primatives that evaluate to true.<br />
+(true == "Greg") is false.<br />
+(true === "Greg") is false.</p>
+<p>Being aware of the difference will let you better understand your code's behavior, and allow you to pick the right operator for the job.</p>
+<p>For example, use (arg === undefined) to check if an optional argument was provided.  If you use (!arg) or (arg == undefined) some odd things might happen, like explicit null being treated as an omitted argument.</p>
+<p>Know that saying "if (foo)" and "if (foo == true)" and "if (foo === true)" are all different. (Try setting foo to each of 5, true, and new Boolean(true))</p>
+<p>Always use the strictest operator possible.  Use looser operaters when you're sure you want to allow the "fuzzier" behavior.  === is very strict, so it is a good tool to have in the old toolbelt.</p>
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

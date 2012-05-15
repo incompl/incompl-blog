@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>incompl</title>
+    <link rel="icon" type="image/png" href="http://incompl.com/images/favicon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/code.css">
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <h1><a href="/">incompl</a></h1>
+      
+  <h2 class="title"><a href="/2011/10/20/javascript-inheriting-names-from-constructors.html">JavaScript: Inheriting names from constructors</a></h2> 
+<div class="post post-/2011/10/20/javascript-inheriting-names-from-constructors">
+  <div class="entrybody">
+    Over the course of a project I'm working on I've run into a few really weird JavaScript behaviors. This is one of them. It only happens with the <em>name</em> property, probably because of how names are handled for constructor functions.
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">Foo</span><span class="p">()</span> <span class="p">{}</span>
+
+<span class="c1">// This should be Object.prototype, or {}, or omitted completely,</span>
+<span class="c1">// but certainly not the Object constructor. Still, what follows</span>
+<span class="c1">// isn&#39;t exactly what you&#39;d expect...</span>
+<span class="nx">Foo</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">foo</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Foo</span><span class="p">();</span>
+
+<span class="kd">function</span> <span class="nx">Bar</span><span class="p">()</span> <span class="p">{}</span>
+
+<span class="nx">Bar</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="nx">foo</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">bar</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Bar</span><span class="p">();</span>
+
+<span class="nx">bar</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
+
+<span class="nx">bar</span><span class="p">.</span><span class="nx">name</span> <span class="c1">// &#39;hello&#39; in chrome, &#39;Object&#39; in firefox</span>
+</code></pre>
+</div>
+
+
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2011/10/20/__proto__-is-not-constructor-prototype.html">__proto__ is not constructor.prototype</a></h2> 
+<div class="post post-/2011/10/20/__proto__-is-not-constructor-prototype">
+  <div class="entrybody">
+    JavaScript's <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object/Proto">__proto__</a> property is extremely handy but non-standard and deprecated. I've seen a lot of people around the net saying that constructor.prototype can be used as an alternative to __proto__. At first they seem to be the same:
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">Foo</span><span class="p">()</span> <span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">foo</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Foo</span><span class="p">();</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">foo</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">==</span> <span class="nx">Foo</span><span class="p">.</span><span class="nx">prototype</span><span class="p">);</span> <span class="c1">// true</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">foo</span><span class="p">.</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">==</span> <span class="nx">Foo</span><span class="p">.</span><span class="nx">prototype</span><span class="p">);</span> <span class="err"> </span><span class="c1">// true</span>
+</code></pre>
+</div>
+
+Unfortunately when you really start to dig in you find that they're not equivalent:
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">Parent</span><span class="p">()</span> <span class="p">{}</span>
+<span class="kd">var</span> <span class="nx">parent</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Parent</span><span class="p">();</span>
+<span class="kd">function</span> <span class="nx">Child</span><span class="p">()</span> <span class="p">{}</span>
+<span class="nx">Child</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="nx">parent</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">child</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Child</span><span class="p">();</span>
+
+<span class="c1">// child inherits directly from parent. this makes sense.</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">child</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">===</span> <span class="nx">parent</span><span class="p">);</span> <span class="c1">// true</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">child</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">===</span> <span class="nx">Parent</span><span class="p">.</span><span class="nx">prototype</span><span class="p">);</span> <span class="c1">// false</span>
+
+<span class="c1">// you might think child&#39;s constructor would be Child, but it&#39;s Parent.</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">child</span><span class="p">.</span><span class="nx">constructor</span> <span class="o">===</span> <span class="nx">Parent</span><span class="p">);</span> <span class="c1">// true</span>
+
+<span class="c1">// as a result, you get this</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">child</span><span class="p">.</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">===</span> <span class="nx">parent</span><span class="p">);</span> <span class="c1">// false</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">child</span><span class="p">.</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">===</span> <span class="nx">Parent</span><span class="p">.</span><span class="nx">prototype</span><span class="p">);</span> <span class="c1">// true</span>
+</code></pre>
+</div>
+
+<p>
+This has become especially relevant lately with the introduction of __proto__'s weaker successor, <a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object/GetPrototypeOf">getPrototypeOf</a>. It does what __proto__ does, but it's read-only, while setting the __proto__ property of an object is one of __proto's__ handy little charms.
+</p><p>
+Since not everyone supports getPrototypeOf yet, polyfills have been <a href="https://gist.github.com/1052392">popping</a> <a href="https://gist.github.com/1022883">up</a> around the net that fall back to __proto__ and constructor.prototype. However, these polyfills are broken, because constructor.prototype just isn't the same thing. Adding to the confusion, <a href="http://ejohn.org/blog/objectgetprototypeof/">John Resig's post</a> on getPrototypeOf insinuates that they're the same thing as well.
+</p><p>
+I'm glad that we're getting a standard way to access an object's prototype with getPrototypeOf. It's unfortunate all the polyfills I've seen aren't correct and I can't think of a way to polyfill below IE9. Anyone have any clever ideas?
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2011/04/07/mixcloud.html">Mixcloud</a></h2> 
+<div class="post post-/2011/04/07/mixcloud">
+  <div class="entrybody">
+    <a href="http://incompl.com/wp-content/uploads/2011/04/mixcloud_logo-300x981.png"><img class="alignright size-full wp-image-1113" title="mixcloud_logo-300x98" src="http://incompl.com/wp-content/uploads/2011/04/mixcloud_logo-300x981.png" alt="" width="300" height="81" /></a>
+<p>
+I like to make DJ sets: compilations of electronic music combined into long seamless compositions. Though the individual songs are edited, warped, and layered, they are still copyrighted works by other artists, so distributing these sets is not necessarily legal. The powers that be seem to ignore the prevalent sharing of DJ sets online, but it has always bothered me that there isn't a legitimate way to share my work.
+</p><p>
+Enter <a href="http://mixcloud.com">Mixcloud</a>, which promises to solve this problem. Mixcloud allows users to upload and share podcasts, radio shows, and DJ sets. Impressively, <em>Mixcloud itself foots the bill for royalties</em>. They pay <strong>PRS for Music</strong> and <strong>PPL</strong> on behalf of their users.
+</p><p>
+In order to make this legally possible, there are a few reasonable restrictions:
+</p>
+<ul>
+	<li>audio can only be streamed, not downloaded</li>
+	<li>sets must have at least  8 tracks</li>
+	<li>full track lists must be provided</li>
+</ul>
+<div style="float: right; margin: 0 0 .5em .5em;"><object width="300" height="300"><param name="movie" value="http://www.mixcloud.com/media/swf/player/mixcloudLoader.swf?v=106" /><param name="allowFullScreen" value="true" /><param name="allowscriptaccess" value="always" /><param name="flashVars" value="feed=http://www.mixcloud.com/api/1/cloudcast/akelon/through-the-darker-places.json&amp;embed_uuid=f848702d-2579-4047-8ab5-89e5151be62b&amp;embed_type=widget_standard" /><embed type="application/x-shockwave-flash" width="300" height="300" src="http://www.mixcloud.com/media/swf/player/mixcloudLoader.swf?v=106" flashvars="feed=http://www.mixcloud.com/api/1/cloudcast/akelon/through-the-darker-places.json&amp;embed_uuid=f848702d-2579-4047-8ab5-89e5151be62b&amp;embed_type=widget_standard" allowfullscreen="true" allowscriptaccess="always"></embed></object>&nbsp;
+<p style="display: block; font-size: 12px; font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 3px 4px 3px 4px; color: #999;"><a style="color: #02a0c7; font-weight: bold;" href="http://www.mixcloud.com/akelon/through-the-darker-places/?utm_source=widget&amp;utm_medium=web&amp;utm_campaign=base_links&amp;utm_term=cloudcast_link" target="_blank">Through The Darker Places</a> by <a style="color: #02a0c7; font-weight: bold;" href="http://www.mixcloud.com/akelon/?utm_source=widget&amp;utm_medium=web&amp;utm_campaign=base_links&amp;utm_term=profile_link" target="_blank">Akelon</a> on <a style="color: #02a0c7; font-weight: bold;" href="http://www.mixcloud.com/?utm_source=widget&amp;utm_medium=web&amp;utm_campaign=base_links&amp;utm_term=homepage_link" target="_blank"> Mixcloud</a></p>
+
+</div>
+<p>
+In addition to these limits, there was a 100 mb limit on uploads, which did limit me on my audio quality. Still, the service is free, so it's pretty impressive that this is viable.
+</p><p>
+The requirement to include full track lists is not just a burden. This required metadata allows for some interesting features, such as the ability to search for DJ sets that include a particular song. This is not something I've seen before and it certainly is a fun way to search for new music. Additionally, an uploader can easily mark the start times of each track in a set, and the player helpfully highlights the currently playing song.
+</p><p>
+How does Mixcloud make money from this? Two ways that I can see:
+</p>
+<ul>
+	<li>Ads. The site has ugly banner ads, but hey, at least they're not kidding themselves about the need to generate revenue.</li>
+	<li>Affiliates? Mixcloud puts "Buy" links in track lists, allowing you to buy individual songs from sites such as Amazon, iTunes, Beatport, and Juno. It's possible they make money from these referrals.</li>
+</ul>
+<p>
+Founded in 2008, Mixcloud has received two grants from the <a href="http://www.innovateuk.org/">Technology Strategy Board</a>, the UK’s national innovation agency. They're still running lean with only 4 employees, but if this business model is sustainable, they're really onto something here.
+</p><p>
+<a href="http://www.mixcloud.com/akelon/">My Mixcloud profile</a>
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2011/02/20/my-experience-with-kickstarter.html">My Experience with Kickstarter</a></h2> 
+<div class="post post-/2011/02/20/my-experience-with-kickstarter">
+  <div class="entrybody">
+    <a href="http://incompl.com/wp-content/uploads/2011/02/Kickstarter_logo.jpg"><img class="alignright size-medium wp-image-1050" title="Kickstarter_logo" src="http://incompl.com/wp-content/uploads/2011/02/Kickstarter_logo-300x81.jpg" alt="Kickstarter logo" width="240" height="65" /></a>
+<p>
+I recently raised $743 in donations to my side-project, a web-based game titled <a href="http://startcontinue.com">91</a>. I used the fund-raising site <a href="http://kickstarter.com">Kickstarter</a> and the experience was delightful and fascinating. Here is how it happened.
+</p><p>
+I’ve been working on 91 for about a year. The first post on the game’s blog was on 11/27/2009 but I had been working on the game before that, though I’m not sure when coding actually began. Many of the ideas present in the game have been brewing in my head for several years.
+</p><p>
+I had been looking at Kickstarter just out of curiosity. It’s an interesting site: users create projects that they want to get funded by donations. These projects are usually creative and include art, theater, music, writing, and of course games. Each project has a deadline and a funding goal, usually measured in thousands of dollars. Each project is funded only if the goal is met. If the goal is not met, no money changes hands. The idea here is that if a project requires the full amount in order to become reality, then no one should have to donate to a project that doesn’t meet its goal and cannot be completed.
+</p><p>
+An additional feature is that projects are required to have rewards. If a project is successfully funded, donors may receive a reward based on how much they donated. This adds an additional incentive and personal touch to each project. Project creators can choose whatever rewards they’d like.
+</p><p>
+It seems to me that Kickstarter has several functions. One, they handle all the money, which is nice. Second, they’re a trusted name, so having a Kickstarter project gives you a certain authenticity that makes people less skeptical about donating. Further, they’re offering their promotion and their marketing smarts. It’s not arbitrary that Kickstarter requires deadlines and rewards. These are known to be successful ways to raise money, and Kickstarter wants you to succeed. Kickstarter offers great advice throughout the process, and they also drive a fair amount of traffic to your project, especially if you’re featured on their home page. In exchange, Kickstarter takes 5% of what you raise.
+</p><p>
+So, I decided to raise some money. There is one little inconsistency here: isn’t Kickstarter for potential projects that need money to begin? My game isn't complete, but it's already underway. Well, my idea passed Kickstater’s approval process, so they seem to be flexible. My goal was to cover costs I’ve incurred while developing the game, which are not completely negligible. This money isn't for personal use, excluding of course pizza deliveries during late-night coding sessions. My costs for my first year developing 91 look like this:
+</p><p>
+<ul>
+	<li>LunarPages Hosting (12 months) $107</li>
+	<li>LunarPages Domain Registration (1 year) $20</li>
+	<li>Github (12 months) $84</li>
+	<li>Coda (software) $99</li>
+	<li>iShowU HD (software) $30</li>
+	<li>12 silly sunglasses (Kickstarter reward) $13</li>
+	<li>20 custom postcards from <a href="http://moo.com">moo.com</a> (Kickstarter reward) $20</li>
+	<li>VectorDesigner (software to create postcard graphics) $30</li>
+	<li>12 custom booklets from <a href="http://lulu.com">lulu.com</a> (Kickstarter reward) $64</li>
+	<li>Concept art commission (Kickstarter promotion) $60</li>
+</ul>
+Total: $527
+</p><p>
+This works out to be very close to what I chose as my project goal, $500. I decided to see if I could raise this much money in 30 days, from 1/8/2011 to 2/7/2011.
+</p><p>
+The question of what to offer as rewards was an interesting one. I looked at other successful projects for ideas. The sunglasses were the idea of a friend of mine. Here are the rewards I used. Each reward includes all the rewards from the lower tiers.
+</p><p>
+<strong>$10 or more: Get your name / url posted on http://startcontinue.com/community/thanks</strong>
+</p><p>
+The idea here was to try to get people to donate at least $10. There were still 5 people who donated less than $10 and didn’t get any reward.
+</p>
+<a href="http://incompl.com/wp-content/uploads/2011/02/rewards.jpg"><img class="alignright size-medium wp-image-1059" title="rewards" src="http://incompl.com/wp-content/uploads/2011/02/rewards-300x226.jpg" alt="A photo of the rewards I sent out to Kickstarter supporters" width="300" height="226" /></a>
+<p>
+<strong>$25 or more: A booklet with a short story about the game and a postcard with a map of the city the game takes place in.</strong>
+</p><p>
+This seemed to be the reward people were most interested in. I believe that in general Kickstarter backers want creative and personalized rewards related to the project they’re donating to.
+</p><p>
+<strong>$50 or more: In addition, get sweet neon sunglasses, and your character in-game starts with sweet sunglasses.</strong>
+</p><p>
+Either because the reward was lame or because $50 is not a compelling donation quantity, only one person donated at this level.
+</p><p>
+<strong>$100 or more: In addition, you get an NPC named after you in the game, and your name/link goes in the startcontinue.com footer.</strong>
+</p><p>
+To my surprise and delight, four people donated at this level. It’s hard to say if the rewards were a factor, because these are some awesome and generous people either way.
+</p><p>
+<strong>$500 or more: I’ll fly to wherever you are and buy you a beer in person. Limit 1, first come first serve.</strong>
+</p><p>
+This wasn’t my idea, there actually was another project that offered this reward. It was a sort of a joke to begin with, honestly. No one donated at this level.
+</p><p>
+Another thing Kickstarter suggests is making a video to explain your project. Your video is featured right at the top of your project page. I thought about taking a lot of time to make a high-quality video, but I didn’t want to waste the effort if I was only going to get $30 of pledges. I made a quick video demonstrating the game, figuring that I could always make a better one later, which I never did. Besides, the game can speak for itself. People know a game they want to play if they see it, right?
+</p><p>
+With that all determined I started the project, totally unsure of if anyone would be interested in donating. I wouldn’t have been surprised if the project received no attention and ended with mere pocket-change in pledges.
+</p><p>
+Donations trickled in for the first week. I posted the project on social media sites such as <a href="http://reddit.com">Reddit</a> and <a href="http://digg.com">Digg</a> and some forums such as <a href="http://roguetemple.com/forums/">Roguetemple</a>. This generated enough interest to raise my first $100. During this time it looked like the I may or may not make my goal, depending on if I could keep up the pace.
+</p><p>
+During the second week, the project stagnated. I had posted to all the forums and sites I thought were relevant, and didn’t want to get spammy. I considered making a new, better video to promote the game, and probably would have if this kept up. I also commissioned some concept art to help promote the game and make the project more eye-catching.
+</p><p>
+After January 18th something interesting happened. People started to notice 91. There was some discussion about the game on <a href="http://www.rockpapershotgun.com/">rockpapershotgun.com</a>’s forums around this time, which drove more interest and traffic than I expected. Also, a couple more predominant members of the gaming community started to donate generously and help promote the game. It seems that the best way to get attention is to get mentioned in the right forums or social news sites, and to get noticed by the right people. With new people helping to promote, 91 was mentioned in new places and new avenues of traffic opened up. Not just that, it was the right kind of traffic, as these people were donating at higher levels.
+</p><p>
+Thanks to this, I suddenly met my goal in a matter of days. It was a really exciting time! This is where I stopped worrying about promotion and started working on the rewards I’d need to send out.
+</p>
+<a href="http://incompl.com/wp-content/uploads/2011/02/91-on-kickstarter-home-page.png"><img class="alignright size-full wp-image-1053" title="91 on kickstarter home page" src="http://incompl.com/wp-content/uploads/2011/02/91-on-kickstarter-home-page.png" alt="Screen shot of 91 on the kickstarter.com home page" width="262" height="238" /></a>
+<p>
+On January 28th another interesting thing happened. 91 was featured on the kickstarter.com home page. This drove a great amount of traffic. During this time I got around 250 referrals to startcontinue.com from Kickstarter, which is only a subset of the number of people who visited the Kickstarter project page. Since these are people who clicked-through from the project page, these were 250 people who had looked at the project page and wanted to learn more.
+</p><p>
+91 was featured on Kickstarter’s home page again a few days later, driving another 150 referrals to startcontinue.com.
+</p><p>
+On February 1st 91 was featured in an article on <a href="http://www.pcgamer.com/">pcgamer.com</a> titled “10 games you can help fund now.” The article was later taken down; I’m not sure why. I do have a backup of it. The article was very sarcastic, probably in response to some of the projects that were featured, some of which were asking for a lot of money with little to show for themselves. One commenter went so far as to suggest that all of these projects were scams. Well, maybe some of them were, if they weren’t simply misled or overly-ambitious. At least I felt vindicated by this: the author starts describing 91 by saying “You’ve got to have a soft spot for roguelikes, and developers who aren’t deluded, greedy bastards.” They give a quick overview of the game and seem generally positive. However, they switch back to sarcasm, and conjecture that my reward of flying out to buy a beer for the $500 donor was an attempt to get a free holiday. The article ends: “Greedy bastard!” I have the feeling that this was all in good fun, but I admit I was a little confused at the time, especially given the more earnest disdain being doled out nearby. It’s not clear to me if this exposure led to any contributions.
+</p><p>
+On February 7th the funding period closed. The project was a great success, reaching 149% of its goal (yes, you keep whatever you raise above the goal) with $743 total. I was quite pleased, but actually felt a bit pressured too. Suddenly my little side-project had actual expectations attached to it for the first time.
+</p><p>
+Once the funding period closed I started organizing my rewards. Kickstarter lets you send out surveys to automatically collect the information needed from backers, such as their shipping addresses. The sunglasses I ordered on Amazon: that was easy.  I ordered the custom postcards from moo.com, which prints them in multiples of 20, so I have some extras. I ordered the booklets from lulu.com and they turned out beautiful. I had everything shipped to my apartment so I could combine them, add some personal touches, and ship a single packet to each backer. One thing I didn’t think about was international shipping costs, but only a couple of backers were international so it was manageable.
+</p><p>
+One lesson I learned is that I’m not much of a marketer. 91 is a unique game and it’s hard to tell exactly who would be interested in it, but I missed the mark, and never thought to post in some of the forums that ended up being very interested in the game. Also, since certain people ended up being extremely helpful in promoting the game, if I did this again I’d send emails (or maybe tweets?) to influential members of the gaming community right off the bat, telling them about the game and asking not for donations but for help promoting the project. Of course, I’d send personal emails only to people I thought would be genuinely interested in the game based on what I knew about them. I don’t think any less personal emails or mass-marketing is likely to work and could even harm goodwill.
+</p><p>
+Another thing I learned is that having a working demo was crucial to my success. Many people are skeptical of Kickstarter projects that promise the world but don’t have convincing credentials suggesting that the project will be a success. I didn’t have to prove much to anyone: people who wanted to know what I was capable of could just play the work-in-progress and see it for themselves.
+</p><p>
+Another interesting fact is that some people thought I was being greedy. My Kickstarter page mentioned that I do this in my spare time and that I do have a day job, so some people said they saw no reason to donate to me since I didn’t need the money. That’s true, I’m not a starving artist trying to put food on the table. And certainly, those types of people should get money before I should. But still, I think anyone who creates art, be it video games or novels or paintings, is putting their heart and soul into their work, not to mention their time and money. There is nothing wrong with people who enjoy such art giving something back. Would these people think any differently if I charged for the game instead of asking for donations? Would it be different if I was making a different type of game than a roguelike, most of which are free? It’s hard to say.
+</p><p>
+Overall this was a great experience. At this point I’m not developing 91 at a personal financial loss. Much better, though, is all the people I’ve met and talked to throughout the process. I’ve gotten a lot of great feedback on the game and it’s really encouraging seeing that people are interested in my work. My plan now is to keep at it. The game came a long way in its first year. I’m hoping that in another year it’ll be done. We’ll see how it goes! If you want to learn more about 91, visit <a href="http://startcontinue.com">http://startcontinue.com</a>.
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2011/01/13/boston-blizzard-january-12-2011.html">Boston Blizzard January 12, 2011</a></h2> 
+<div class="post post-/2011/01/13/boston-blizzard-january-12-2011">
+  <div class="entrybody">
+    <p>
+I made this video of people sledding:
+</p>
+<object width="480" height="290"><param name="movie" value="http://www.youtube.com/v/mYGqGGJXdy4?fs=1&amp;hl=en_US"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/mYGqGGJXdy4?fs=1&amp;hl=en_US" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="290"></embed></object>
+
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/09/20/concise-javascript-image-preloading.html">Concise JavaScript Image Preloading</a></h2> 
+<div class="post post-/2010/09/20/concise-javascript-image-preloading">
+  <div class="entrybody">
+    <a href="http://incompl.com/wp-content/uploads/2010/09/fireman-clock.jpg"><img class="alignright size-medium wp-image-976" title="fireman clock" src="http://incompl.com/wp-content/uploads/2010/09/fireman-clock-300x300.jpg" alt="A photo of a fireman fixing a large clock" width="173" height="173" /></a>
+
+For some reason, all over the Internet people preload images like this:
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">img</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Image</span><span class="p">();</span>
+<span class="nx">img</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="s2">&quot;image.jpg&quot;</span><span class="p">;</span>
+</code></pre>
+</div>
+
+There is no reason for this code to be two lines. I preload my images like this:
+<div class="highlight"><pre><code class="javascript"><span class="k">new</span> <span class="nx">Image</span><span class="p">().</span><span class="nx">src</span> <span class="o">=</span> <span class="s2">&quot;image.jpg&quot;</span><span class="p">;</span>
+</code></pre>
+</div>
+
+It would be hard to come up with a more minor nitpick than this, but if we're going to write this code hundreds of times during our lives, why not keep it simple?
+
+<a href="http://www.flickr.com/photos/roberto_ferrari/281640001/">[image credit]</a>
+
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/09/20/catching-jquery-ajax-json-parse-error.html">Catching jQuery AJAX JSON Parse Error</a></h2> 
+<div class="post post-/2010/09/20/catching-jquery-ajax-json-parse-error">
+  <div class="entrybody">
+    <p>
+Today I found an interesting bug in my jQuery code. My app was reporting "You are offline: check your Internet connection" but Firebug was reporting the 200 success status code for the request. Turns out that I had a syntax error in the JSON file I was pulling down. Fair enough, that is certainly an error, it's just that my log message was wrong. So I went into my <a href="http://api.jquery.com/ajaxError/"><em>ajaxError</em></a> function to fix it.
+</p><p>
+Here is where I got a bit confused. Though <em>ajaxError</em> has several helpful arguments, none of them seemed to identify when a JSON parse error had occurred. After Googling around a bit, I found <a href="http://www.maheshchari.com/jquery-ajax-error-handling/">a helpful example</a> of the <a href="http://api.jquery.com/jQuery.ajaxSetup/"><em>ajaxSetup</em></a> function. <em>ajaxSetup</em> lets you define an error function too. At first I assumed this was the same as <em>ajaxError</em>, but it turns out that the <em>ajaxSetup</em> error function is called, then the <em>ajaxError</em> function is called, on each AJAX error.
+</p><p>
+More importantly, the error function defined in <em>ajaxSetup</em> does more to identify the source of the problem. Here is the gist of the code I ended up writing:
+</p>
+<div class="highlight"><pre><code class="javascript"><span class="nx">$</span><span class="p">.</span><span class="nx">ajaxSetup</span><span class="p">({</span>
+    <span class="nx">error</span><span class="o">:</span><span class="kd">function</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">e</span><span class="p">){</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">x</span><span class="p">.</span><span class="nx">status</span> <span class="o">===</span> <span class="mi">0</span><span class="p">){</span>
+            <span class="nx">journal</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;You are offline.&quot;</span><span class="p">,</span> <span class="s2">&quot;bad&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">x</span><span class="p">.</span><span class="nx">status</span> <span class="o">===</span> <span class="mi">404</span><span class="p">){</span>
+            <span class="nx">journal</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;404 file not found error&quot;</span><span class="p">,</span> <span class="s2">&quot;bad&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">x</span><span class="p">.</span><span class="nx">status</span> <span class="o">===</span> <span class="mi">500</span><span class="p">){</span>
+            <span class="nx">journal</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;500 internal server error&quot;</span><span class="p">,</span> <span class="s2">&quot;bad&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">e</span> <span class="o">===</span> <span class="s1">&#39;parsererror&#39;</span><span class="p">){</span>
+            <span class="nx">journal</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;200 but can&#39;t parse json response&quot;</span><span class="p">,</span> <span class="s2">&quot;bad&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">e</span> <span class="o">===</span> <span class="s1">&#39;timeout&#39;</span><span class="p">){</span>
+            <span class="nx">journal</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;Request timed out.&quot;</span><span class="p">,</span> <span class="s2">&quot;bad&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">journal</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;Unknown AJAX error&quot;</span><span class="p">,</span> <span class="s2">&quot;bad&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre>
+</div>
+
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/09/19/checking-javascript-function-argument-types.html">Checking JavaScript Function Argument Types</a></h2> 
+<div class="post post-/2010/09/19/checking-javascript-function-argument-types">
+  <div class="entrybody">
+    The <em><a href="https://developer.mozilla.org/en/JavaScript/Reference/Operators/Special_Operators/typeof_Operator">typeof</a></em> operator in JavaScript can be a little misleading. Here is an example of using it to check the type of a function argument.
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">foo</span><span class="p">(</span><span class="nx">str</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">str</span> <span class="o">===</span> <span class="s2">&quot;string&quot;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s2">&quot;foo &quot;</span> <span class="o">+</span> <span class="nx">str</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="s2">&quot;Can only foo a string&quot;</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="nx">foo</span><span class="p">(</span><span class="s2">&quot;dog&quot;</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;foo dog&quot;</span><span class="p">;</span> <span class="c1">// true</span>
+</code></pre>
+</div>
+
+So far so good. However, in JavaScript a "String" can be either a value <em>or</em> a String object. What happens if we pass in a String object?
+<div class="highlight"><pre><code class="javascript"><span class="nx">foo</span><span class="p">(</span><span class="k">new</span> <span class="nb">String</span><span class="p">(</span><span class="s2">&quot;dog&quot;</span><span class="p">))</span> <span class="o">===</span> <span class="s2">&quot;foo dog&quot;</span><span class="p">;</span> <span class="c1">// exception thrown!</span>
+</code></pre>
+</div>
+
+Woops! That is definitely not what we want.
+
+Sadly, there is nothing built into JavaScript that is perfect for this situation. But consider the following alternative. This version was borrowed from  <a href="http://dmitry.baranovskiy.com/post/typeof-and-friends">Dmitry Baranovskiy</a> but there are a few similar functions around the net.
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">is</span><span class="p">(</span><span class="nx">o</span><span class="p">,</span> <span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">type</span> <span class="o">=</span> <span class="nb">String</span><span class="p">(</span><span class="nx">type</span><span class="p">).</span><span class="nx">toLowerCase</span><span class="p">();</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nx">type</span> <span class="o">==</span> <span class="s2">&quot;null&quot;</span> <span class="o">&amp;&amp;</span> <span class="nx">o</span> <span class="o">===</span> <span class="kc">null</span><span class="p">)</span> <span class="o">||</span>
+           <span class="p">(</span><span class="nx">type</span> <span class="o">==</span> <span class="k">typeof</span> <span class="nx">o</span><span class="p">)</span> <span class="o">||</span>
+           <span class="p">(</span><span class="nx">type</span> <span class="o">==</span> <span class="s2">&quot;object&quot;</span> <span class="o">&amp;&amp;</span> <span class="nx">o</span> <span class="o">===</span> <span class="nb">Object</span><span class="p">(</span><span class="nx">o</span><span class="p">))</span> <span class="o">||</span>
+           <span class="p">(</span><span class="nx">type</span> <span class="o">==</span> <span class="s2">&quot;array&quot;</span> <span class="o">&amp;&amp;</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span> <span class="o">&amp;&amp;</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">o</span><span class="p">))</span> <span class="o">||</span>
+           <span class="nb">Object</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">toString</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">o</span><span class="p">).</span><span class="nx">slice</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nx">toLowerCase</span><span class="p">()</span>
+           <span class="o">==</span> <span class="nx">type</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+Let's rewrite our <em>foo</em> function using this new <em>is </em>function.
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">foo</span><span class="p">(</span><span class="nx">str</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">is</span><span class="p">(</span><span class="nx">str</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s2">&quot;foo &quot;</span> <span class="o">+</span> <span class="nx">str</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="s2">&quot;Can only foo a string&quot;</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="nx">foo</span><span class="p">(</span><span class="s2">&quot;dog&quot;</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;foo dog&quot;</span><span class="p">;</span> <span class="c1">// true</span>
+<span class="nx">foo</span><span class="p">(</span><span class="k">new</span> <span class="nb">String</span><span class="p">(</span><span class="s2">&quot;dog&quot;</span><span class="p">))</span> <span class="o">===</span> <span class="s2">&quot;foo dog&quot;</span><span class="p">;</span> <span class="c1">// true</span>
+</code></pre>
+</div>
+
+Now we're getting what we want! As with <a href="http://javascript.crockford.com/prototypal.html">object instantiation</a>, this is a case where what's built into the language just doesn't cut it, but if you understand what you'd prefer and why, you can definitely get what you need.
+
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/07/24/autofocus-vs-shortcuts.html">Autofocus vs. Shortcuts</a></h2> 
+<div class="post post-/2010/07/24/autofocus-vs-shortcuts">
+  <div class="entrybody">
+    <a href="http://incompl.com/wp-content/uploads/2010/07/shortcut.jpg"><img class="alignright size-full wp-image-928" title="Shortcut" src="http://incompl.com/wp-content/uploads/2010/07/shortcut.jpg" alt="A photograph of a street sign that reads &quot;Short Cut&quot;" width="146" height="320" /></a>
+<p>
+I was reading <a href="http://books.alistapart.com/product/html5-for-web-designers">HTML5 for Web Designers</a> and was reminded again of the interesting debate about autofocus and keyboard shortcuts. If you're unfamiliar, autofocus is a JavaScript technique for automatically putting the cursor in a particular form element when a user visits a web page. This happens when you visit <a href="http://www.google.com/">Google</a>: notice that you can just start typing without manually clicking in the search box first.
+</p><p>
+The concern that many people have is that autofocus impedes the use of certain keyboard shortcuts. Awhile ago on Twitter I noticed that <a href="http://perfectionkills.com/">Juriy Zaytsev</a> (a prolific JavaScript blogger and <a href="http://www.prototypejs.org/">Prototype.js</a> core developer)  <a href="http://twitter.com/kangax/status/15114069104">said</a> that autofocus breaks the <em>backspace</em> button, which is a shortcut for <em>back</em>. In the aforementioned book I'm reading, the author suggests that you should think long and hard before using autofocus, since it breaks use of the <em>space</em> key to scroll down the page. In both cases, autofocus causes these keys to type or delete in the selected form element instead of executing the shortcut's intended function.
+</p><p>
+It's a shame that these prominent folks are dissuading people from using autofocus. Autofocus really is a time-saver. The real problem is <strong>bad keyboard shortcuts</strong>.
+</p><p>
+Keyboard shortcuts that are too likely to confuse the user and produce the wrong result are a bad idea. I'd argue that using <em>backspace</em> or <em>spacebar</em> as a keyboard shortcut is almost as harmful as using <em>p</em> or <em>b</em>. <em>Keys that indicate that the user may be trying to type something should not be used as shortcuts</em>. Unless paired with one of alt, control, option, etc.
+</p><p>
+The good news is that although there are some very common but very bad keyboard shortcuts available, you don't have to use them. If you want to stop being bothered by autofocus, I have found that Firefox, Opera, Chrome, and Safari all support <em>command-[</em> as an alternative to <em>backspace</em> that works even if a form element has focus. Further, <em>fn-downarrow</em> is a good alternatives to <em>spacebar</em> for scrolling down.
+</p><p>
+Start using good keyboard shortcuts! It'll keep you sane, and let web designers make use of helpful features like autofocus!
+</p><p>
+<a href="http://www.flickr.com/photos/matt_lee/418275873/">[image credit]</a>
+</p><p>
+<em>Note: All keyboard shortcuts tested on a Mac only. Though I assume in Windows you have similar options.</em>
+</p>
+  </div>
+</div>
+
+  <h2 class="title"><a href="/2010/05/19/chrome-web-store.html">Chrome Web Store - I like it, though I may never use it.</a></h2> 
+<div class="post post-/2010/05/19/chrome-web-store">
+  <div class="entrybody">
+    <a href="http://incompl.com/wp-content/uploads/2010/05/cwslogo-chrome.png"><img class="alignright size-full wp-image-918" title="Chrome Web Store Logo" src="http://incompl.com/wp-content/uploads/2010/05/cwslogo-chrome.png" alt="The Chrome Web Store Logo" width="251" height="46" /></a>
+<p>
+I like the idea behind the newly-announced <a href="https://chrome.google.com/webstore">Chrome Web Store</a>. It's a store for web apps, which technically aren't different from any other web sites like <a href="http://docs.google.com">Google Docs</a>. At first it feels like Google is just out to make a quick buck by mimicking Apple's successful <a href="http://www.apple.com/iphone/apps-for-iphone/">App Store</a>. However, I think something more subtle is going on here. This is a a totally different approach to making money on the web.
+</p><p>
+Every now and then I think about making money from my side projects, but I've never done it. Why? Because making money on the web is called "ads". If you're selling t-shirts you probably don't need ads, but if you want to make a website that's fun or useful on its own merits, you don't have a lot of options. <a href="http://en.wikipedia.org/wiki/Google#Advertising">Google makes 99% of its money from ads</a>. The problem? I hate ads.
+</p><p>
+Ads pit you against your users. A user's goal is just to use the app and have fun or perform some task. An advertiser's goal is to get impressions. Do you hate the new ad overlays in Youtube? We all do, but Google has to pay the bills for Youtube to be free. Ever clicked a link, only to discover it wasn't a link at all, it just triggered an irrelevant ad pop-up? They generate impressions. It's a bait and switch, but someone is willing to pay for it, and someone has to write a check to Bob's Discount Hosting at the end of the day.
+</p><p>
+Google has always known that people hate ads. That's why they've put so much work into making ads painless. Their text ads are low-bandwidth and unobtrusive. Now and then, they can even be useful. That's why Google is <a href="http://www.marketingvox.com/googles-ad-server-market-share-at-57-042692/">the clear leader in web advertising market share</a>. Though now Google is asking themselves a few questions. What would the web be like without ads? And where would Google fit into such a web?
+</p><p>
+Are there websites don't sell a more tangible product, don't have ads, and exist only to be fun or useful? Sure. <a href="http://jsregex.com">I made one</a>, but the cost to run it is negligible. What would happen if it started generating millions of views a day, and my hosting company raised my rate? I'd need to take the site down, or find a way to make money. Inevitably, this would mean slapping ads on it. Yuck. Tons of <a href="http://twitter.com/">interesting startups</a> live in the same bubble I live in. Let's just make a useful or fun app, and worry about money later, and only if we have to. With venture capital, you can live in this bubble for a long time. Sooner or later, though, reality sets in. Does this mean Twitter is going to have ads some day? Well, <a href="http://blog.twitter.com/2010/04/hello-world.html">yes</a>. They're wrapping it up in a nice package, painfully aware of how much users hate ads, but that's what they're doing. That's what you <em>have</em> to do.
+</p><p>
+This is why iPhone development is so appealing. <a href="http://www.edibleapple.com/ifart-developer-makes-40000-in-2-days/">You can make money without ads</a>. Your app is just your app. I don't understand in the least why Apple thinks creating <a href="http://developer.apple.com/technologies/iphone/whats-new.html#iAd">an ad platform for iPhone apps</a> is a good idea. They must underestimate how much people hate ads. I cringed when Steve Jobs acted genuinely excited when announcing this stuff. iPhone developers will continue to make it big when they make good software at a good price point. It's such a better way.
+</p><p>
+As you think about all this, eventually you have to ask, why don't web apps work like iPhone apps? Why are the choices "free" or "ads"? 37signals is pretty vocal in saying that <a href="http://37signals.com/svn/posts/1366-a-radical-idea-charge-people-for-your-product">you have to charge for your product</a>. That works pretty well for the small-business collaboration and project management software that 37signals makes. But it doesn't work as well the smaller the app is. On the iPhone, you can sell <a href="http://www.taptaptap.com/#convert">a nifty unit converter</a> for $0.99. On the web? Not a chance. <a href="http://www.google.com/landing/searchtips/#unitconversion">Google does it for free</a>, as do countless other sites. Even if you have the best unit converter on the entire Internet that you spent weeks on developing and doing usability studies and designing gorgeous graphics for. The Internet just doesn't sell web apps in that price range. You come across as a greedy jerk, even if you have a great product.
+</p><p>
+Can that be changed? Can we make it so that nifty bite-size web apps can be sold for a buck or two? How do you change it? Well, here are my guesses as to what you'd have to change:
+<ul>
+	<li>Safer and faster payment system. People hate putting in credit card information on some unknown website. They'd rather just pass than take the risk for a small app that isn't such a big deal after all.</li>
+	<li>Sense of ownership. A Tetris bookmark on a toolbar doesn't feel like a product. It feels the same as all the free Tetris apps out there.</li>
+	<li>Pay once. Periodic billing doesn't make sense for small apps. What is the periodic equivalent of a $0.99? $0.05 / month? It's silly. But still, not a lot of webapps work on a pay-once system. Why not? Well, at that price point, wouldn't it be easier to just throw some ads on there? A pay-once model for apps should be simpler to set up.</li>
+</ul>
+I think the Chrome Web Store is an attempt to fix these problems. You buy apps quickly and safely through Google, you get a <a href="http://code.google.com/chrome/apps/docs/index.html">nifty apps tray in Chrome</a> that makes it feel like you actually own something tangible, and you only pay once.
+</p>
+<img class="alignnone size-full wp-image-890" title="Chrome Apps Tray" src="http://incompl.com/wp-content/uploads/2010/05/tabstrip-apps.png" alt="Screen shot of Chrome's upcoming apps tray" width="584" height="84" />
+<p>
+I don't think that the Chrome Web Store is the future of web application development. On the other hand, I do think Google's efforts will make it more acceptable to make money by selling your web apps instead of by tacking on ads. Once people get used to the idea of buying access to a tic-tac-toe website, web developers will have an easier time selling such apps outside of Google's ecosystem. And that's great.
+</p><p>
+It makes me wonder what Google's perspective is on this. They're an ad empire, and here is their product supporting a different revenue model. Are they worried about what the web would be like without ads, or even, without Google? Would Google start charging for their own apps if things went this direction? You have to evolve to survive on the web, and maybe even Google needs a plan for survival.
+</p><p>
+I'm currently developing <a href="http://startcontinue.com/">a game using HTML5 technologies</a>. I always knew I'd never put ads on it, so I assumed it'd just always be free. Though now I have to wonder. Can I sell it for a buck? It's starting to look like it might be an interesting experiment.
+</p>
+  </div>
+</div>
+
+
+<div class="pagination">
+  
+  <span class="previous">Previous</span>
+  
+  <span class="page_number ">Page: 1 of 8</span>
+  
+  <a href="/page2" class="next ">Next</a>
+  
+</div>
+
+    </div>
+  </body>
+</html>

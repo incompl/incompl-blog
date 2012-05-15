@@ -1,0 +1,65 @@
+--- 
+layout: post
+title: Uploading Large Files in Ruby on Rails
+published: true
+meta: 
+  Short Link: "866"
+  _edit_last: "1"
+tags: 
+- programming
+type: post
+status: publish
+---
+<p>
+File upload is a common feature for web sites, yet for some reason a lot of frameworks make it hard on you. <a href="http://en.wikipedia.org/wiki/JavaServer_Faces">JSF</a> doesn't even support it by default; it requires the installation of additional libraries.
+</p><p>
+In Ruby on Rails it worked pretty well out of the box, but with a catch. File uploads are stored in memory, so if you are letting users upload large files, the server will quickly run out of memory.
+</p><p>
+To solve this I discovered a new (as of 2.3) component of Rails called <a href="http://weblog.rubyonrails.org/2008/12/17/introducing-rails-metal">Metal</a>. Metal is a thin wrapper around <a href="http://rack.rubyforge.org/">Rack</a>, a minimal piece of middleware that handles HTTP requests for Rails. While Metal is a part of Rails, it lets you bypass Rails for the most part, and work at a lower level for those performance-critical bits. Happily, Metal lets you grab an uploaded file without making a copy of it in memory.
+</p><p>
+Here is an example of a Metal class that does file upload. To test this you'd just need to throw it in a <em>/app/metal</em> directory for your Rails project, then navigate to <em>http://example.com/uploadtest</em> to try it out.
+</p>
+{% highlight ruby %}class Uploadtest
+
+  def self.call(env)
+
+    if env["PATH_INFO"] =~ /^\/uploadtest$/
+
+      request = Rack::Request.new(env)
+
+      # Get temp file from request
+      # Format: {:filename, :type, :name, :tempfile, :head}
+      file = request.POST["file"] 
+
+      # Make sure we have the parameter
+      if !file.nil?
+
+        # Create new file path
+        directory = File.join("uploads", "uploadtest")
+        FileUtils.mkpath(directory)
+        path = File.join(directory, file[:filename])
+
+        # Copy the uploaded file
+        FileUtils.cp file[:tempfile].path, path
+
+        # Response
+        [200, {"Content-Type" =&gt; "text/html"}, ["Upload Complete"]]
+
+      else
+        # Show an example submission form
+        [200, {"Content-Type" =&gt; "text/html"},
+              ['&lt;form method="post"
+                      action="/uploadtest"
+                      enctype="multipart/form-data"&gt;
+                &lt;input type="file" name="file"/&gt;
+                &lt;input type="submit" value="Upload"/&gt;
+                &lt;/form&gt;']]
+      end
+    else
+      [404, {"Content-Type" =&gt; "text/html"}, ["Not Found"]]
+    end
+  end
+end{% endhighlight %}
+<p>
+I hope this helps someone who runs into the same situation I was in!
+</p>

@@ -1,0 +1,23 @@
+--- 
+layout: post
+title: Concise JavaScript Image Preloading
+published: true
+meta: 
+  Short Link: "972"
+  _edit_last: "1"
+  _wp_old_slug: ""
+tags: 
+- programming
+type: post
+status: publish
+---
+<a href="http://incompl.com/wp-content/uploads/2010/09/fireman-clock.jpg"><img class="alignright size-medium wp-image-976" title="fireman clock" src="http://incompl.com/wp-content/uploads/2010/09/fireman-clock-300x300.jpg" alt="A photo of a fireman fixing a large clock" width="173" height="173" /></a>
+
+For some reason, all over the Internet people preload images like this:
+{% highlight javascript %}var img = new Image();
+img.src = "image.jpg";{% endhighlight %}
+There is no reason for this code to be two lines. I preload my images like this:
+{% highlight javascript %}new Image().src = "image.jpg";{% endhighlight %}
+It would be hard to come up with a more minor nitpick than this, but if we're going to write this code hundreds of times during our lives, why not keep it simple?
+
+<a href="http://www.flickr.com/photos/roberto_ferrari/281640001/">[image credit]</a>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>JavaScript as The Web's Systems Language</title>
+    <link rel="icon" type="image/png" href="http://incompl.com/images/favicon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/code.css">
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <span class="author">
+        September 04, 2008
+      </span>
+      <h1><a href="/">incompl</a></h1>
+      <h2>JavaScript as The Web's Systems Language</h2>
+      <div class="post">
+        <div class="entrybody">
+          We all know there are system programmers and higher-level application programmers.  At the extreme ends of each category: a dude writing C to work on the Linux kernal, and a dude writing Java to create a text editor.  These two fellows deal with very different tasks.  Generally, the former can write stuff that runs faster, and the latter can write stuff more easily.
+
+I'm starting to think that the web is going to get a similar disjunction.   JavaScript may become the C of the web.  I'm not referring to how some new JavaScript engines are approaching the speed of C (not there yet, but certainly getting there).  I'm talking about how JavaScript is becoming the systems language of the web platform.  You write JavaScript to create either really fast webapps, or use libraries implemented in JavaScript to more easily write slower webapps.
+
+Look at some jQuery code for a second:
+<pre>$("#dog").show()</pre>
+<pre>.addClass("barking")</pre>
+<pre>.load("dogdata.html")</pre>
+It starts to look more like a domain-specific language for DOM manipulation than actual JavaScript.
+
+Since that may be a stretch for some people, here is a better example, further into the disjunction I'm talking about.  <a href="http://cappuccino.org/">Cappuccino</a>.
+
+What are we looking at here?  A library that is much more powerful than typical web app libraries.  It uses its own programming language (Objective-J).  And if the demos are to be trusted, the resulting software is much slower than stuff written in plain JavaScript.
+
+Imagine years down the line if we had web app developers that knew Objective-J, but not JavaScript.  Us JavaScript guys would be useful for maintaining these libraries, and for doing the jobs that need to be blazing fast.  Sound like a C developer of the desktop world?
+
+Obviously this trend could be derailed depending on how browsers develop.  I found it an interesting pattern nonetheless.
+
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
