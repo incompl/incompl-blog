@@ -12,6 +12,113 @@
     <div id="wrapper">
       <h1><a href="/">incompl</a></h1>
       
+  <h2 class="title"><a href="/2012/06/12/new-in-boxbox.html">What's new in boxbox</a></h2> 
+<div class="post post-/2012/06/12/new-in-boxbox">
+  <div class="entrybody">
+    <p><a href='http://incompl.github.com/boxbox/'>boxbox</a>, my JavaScript framework for making 2d physics-based games with <a href='http://box2d.org/'>box2d</a>, has come a long way. If you haven&#8217;t seen it before, <a href='http://weblog.bocoup.com/introducing-boxbox/'>this tutorial</a> covers the basics. In this article I&#8217;m going to quickly cover some of what&#8217;s new and where boxbox is headed.</p>
+
+<p>I&#8217;ve been building a <a href='http://en.wikipedia.org/wiki/Castlevania'>Castlevania</a>-like platform game with boxbox, and my experience building a real game has been the main factor informing my design decisions.</p>
+
+<h3 id='making_boxbox_more_like_a_framework'>Making boxbox more like a framework</h3>
+
+<p>I&#8217;ve made the switch from calling boxbox a library to calling it a framework. boxbox is becoming more capable as the infrastructure that houses a game, rather than simply a tool to use while making a game.</p>
+
+<h4 id='init'>init</h4>
+
+<p>An interesting question I&#8217;ve considered while designing boxbox is this: when should something be an entity option, when should it be a method, and when should it be both? For example, event handlers are added via methods and currently must be attached after an entity is created. Is this ideal?</p>
+
+<p>I&#8217;m still pondering this question, so in the meantime I&#8217;ve added <code>init</code>. It&#8217;s useful in general, but it also lets me punt around this design decision by attaching event handlers in the <code>init</code> function.</p>
+<div class='highlight'><pre><code class='javascript'><span class='nx'>world</span><span class='p'>.</span><span class='nx'>createEntity</span><span class='p'>({</span>
+  <span class='nx'>init</span><span class='o'>:</span> <span class='kd'>function</span><span class='p'>()</span> <span class='p'>{</span>
+    <span class='k'>this</span><span class='p'>.</span><span class='nx'>applyImpulse</span><span class='p'>(</span><span class='mi'>10</span><span class='p'>);</span> <span class='c1'>// jump immediately after being created</span>
+  <span class='p'>}</span>
+<span class='p'>});</span>
+</code></pre>
+</div>
+<h4 id='custom_properties'>Custom properties</h4>
+
+<p>I&#8217;ve often said that a useful pattern when using boxbox would be to have your own model objects that contain boxbox entities. That way you could do your own domain logic and delegate to the boxbox entity when necessary. In practice, this sucks. As I tried it, it just felt like a bunch of extra effort that I shouldn&#8217;t have to do. What felt natural was using the boxbox entities for everything.</p>
+
+<p>After trying a few ideas, I&#8217;m currently liking what I&#8217;m calling &#8220;custom properties&#8221;. This one might seem a little odd, but hear me out, because it&#8217;s a very practical approach. When creating a boxbox entity, options that start with <code>$</code> are not treated as a boxbox options, they&#8217;re simply passed along as properties on the resulting entity.</p>
+
+<p>Here is an example of implementing a damageable object using custom properties:</p>
+<div class='highlight'><pre><code class='javascript'><span class='kd'>var</span> <span class='nx'>enemy</span> <span class='o'>=</span> <span class='nx'>world</span><span class='p'>.</span><span class='nx'>createEntity</span><span class='p'>({</span>
+  <span class='nx'>x</span><span class='o'>:</span> <span class='mi'>5</span><span class='p'>,</span> <span class='c1'>// boxbox option</span>
+  <span class='nx'>y</span><span class='o'>:</span> <span class='mi'>10</span><span class='p'>,</span> <span class='c1'>// boxbox option</span>
+  <span class='nx'>$hp</span><span class='o'>:</span> <span class='mi'>10</span><span class='p'>,</span> <span class='c1'>// custom property</span>
+  <span class='nx'>$damage</span><span class='o'>:</span> <span class='kd'>function</span><span class='p'>(</span><span class='nx'>amount</span><span class='p'>)</span> <span class='p'>{</span> <span class='c1'>// custom property (in this case, a method)</span>
+    <span class='k'>this</span><span class='p'>.</span><span class='nx'>$hp</span> <span class='o'>-=</span> <span class='nx'>amount</span><span class='p'>;</span>
+    <span class='k'>if</span> <span class='p'>(</span><span class='k'>this</span><span class='p'>.</span><span class='nx'>$hp</span> <span class='o'>&lt;=</span> <span class='mi'>0</span><span class='p'>)</span> <span class='p'>{</span>
+      <span class='k'>this</span><span class='p'>.</span><span class='nx'>destroy</span><span class='p'>();</span>
+    <span class='p'>}</span>
+  <span class='p'>}</span>
+<span class='p'>});</span>
+<span class='nx'>enemy</span><span class='p'>.</span><span class='nx'>$damage</span><span class='p'>(</span><span class='mi'>5</span><span class='p'>);</span> <span class='c1'>// entity is not destroyed</span>
+<span class='nx'>enemy</span><span class='p'>.</span><span class='nx'>$damage</span><span class='p'>(</span><span class='mi'>5</span><span class='p'>);</span> <span class='c1'>// entity is destroyed</span>
+</code></pre>
+</div>
+<p>I&#8217;m not 100% committed to this system, but so far I like using it.</p>
+
+<h3 id='patching_box2d'>Patching box2d</h3>
+
+<p>box2d has some behaviors I don&#8217;t really like. These may or may not be &#8220;bugs&#8221; but they do add complexity I&#8217;d prefer to sidestep.</p>
+
+<h4 id='events_on_destroyed_entities'>Events on destroyed entities</h4>
+
+<p>By default, box2d may continue to trigger events for entities that were recently destroyed. boxbox now prevents these events.</p>
+
+<h4 id='object_creation_in_event_handlers'>Object creation in event handlers</h4>
+
+<p>box2d does not allow object creation in event handlers. The world is &#8220;locked&#8221; at that time. This is disruptive to healthy event-driven programming patterns. boxbox will automatically queue object creation if the world is locked. So far the effect is seamless.</p>
+
+<p>This example shows an entity that creates another entity in an event handler. It&#8217;s easy to see how this could be expanded into a &#8220;respawn&#8221; system. Until recently, this code would throw an exception.</p>
+<div class='highlight'><pre><code class='javascript'><span class='kd'>var</span> <span class='nx'>enemy</span> <span class='o'>=</span> <span class='nx'>world</span><span class='p'>.</span><span class='nx'>createEntity</span><span class='p'>({</span>
+  <span class='c1'>// options here </span>
+<span class='p'>});</span>
+<span class='nx'>enemy</span><span class='p'>.</span><span class='nx'>onImpact</span><span class='p'>(</span><span class='kd'>function</span><span class='p'>()</span> <span class='p'>{</span>
+  <span class='k'>this</span><span class='p'>.</span><span class='nx'>destroy</span><span class='p'>();</span>
+  <span class='nx'>world</span><span class='p'>.</span><span class='nx'>createEntity</span><span class='p'>({</span>
+    <span class='c1'>// options here</span>
+  <span class='p'>}});</span>
+<span class='p'>});</span>
+</code></pre>
+</div>
+<h3 id='event_changes'>Event changes</h3>
+
+<h4 id='onrender'>onRender</h4>
+
+<p><code>onRender</code> isn&#8217;t new, but now it can be attached to entities as well as worlds. The value of <code>this</code> in the callback will be appropriate based on which it was attached to.</p>
+
+<h4 id='ontick'>onTick</h4>
+
+<p><code>onTick</code> is new, attachable to both entities and worlds. This allows boxbox to manage your game loop. Ticks are events that happen at a regular interval, default every 50 milliseconds, configurable with the <code>tickFrequency</code> option on your world. <code>onTick</code> is something I have thought about since boxbox was created, but I&#8217;m implementing it now due to my decision for boxbox to become a framework rather than a simple library.</p>
+
+<p>It&#8217;s important to use <code>onRender</code> only for drawing things to the canvas, while using <code>onTick</code> for game logic. <code>onRender</code> is optimized by <a href='https://developer.mozilla.org/en/DOM/window.requestAnimationFrame'>requestAnimationFrame</a> and may not occur at a constant rate, but it’s called once per frame drawn to the canvas. <code>onTick</code> is called regularly regardless of the current framerate.</p>
+
+<h3 id='rendering'>Rendering</h3>
+
+<h4 id='sprite_sheet_support'>Sprite sheet support</h4>
+
+<p>Most 2d games use sprite sheets for animation. They&#8217;re images <a href='http://www.nes-snes-sprites.com/ImagesSheet/FinalFantasy3Sheet1.gif'>like this</a> that contain all the different frames of an animation or multiple animations.</p>
+
+<p>In boxbox you can use an entity&#8217;s image as a spritesheet by adding a couple extra parameters.</p>
+<div class='highlight'><pre><code class='javascript'><span class='kd'>var</span> <span class='nx'>player</span> <span class='o'>=</span> <span class='nx'>world</span><span class='p'>.</span><span class='nx'>createEntity</span><span class='p'>({</span>
+  <span class='nx'>image</span><span class='o'>:</span> <span class='s2'>&quot;player.png&quot;</span><span class='p'>,</span>
+  <span class='nx'>spriteSheet</span><span class='o'>:</span> <span class='kc'>true</span><span class='p'>,</span>
+  <span class='nx'>spriteWidth</span><span class='o'>:</span> <span class='mi'>16</span><span class='p'>,</span> <span class='c1'>// the width, in pixels, of a single sprite</span>
+  <span class='nx'>spriteHeight</span><span class='o'>:</span> <span class='mi'>16</span> <span class='c1'>// same but height</span>
+<span class='p'>});</span>
+<span class='nx'>player</span><span class='p'>.</span><span class='nx'>sprite</span><span class='p'>(</span><span class='mi'>0</span><span class='p'>,</span> <span class='mi'>2</span><span class='p'>);</span> <span class='c1'>// set the image to column 0, row 2 in the spritesheet</span>
+</code></pre>
+</div>
+<p>You might notice that boxbox doesn&#8217;t support spritesheets that are not based on grids. That&#8217;s for simplicity, and it may change.</p>
+
+<h3 id='thats_it_for_now'>That&#8217;s it for now</h3>
+
+<p>Drop me a <a href='https://twitter.com/_gsmith'>tweet</a> if you have any comments or questions, and issues are always welcome on <a href='https://github.com/incompl/boxbox/issues?direction=desc&amp;sort=created&amp;state=open'>github</a>. Enjoy!</p>
+  </div>
+</div>
+
   <h2 class="title"><a href="/2011/10/20/javascript-inheriting-names-from-constructors.html">JavaScript: Inheriting names from constructors</a></h2> 
 <div class="post post-/2011/10/20/javascript-inheriting-names-from-constructors">
   <div class="entrybody">
@@ -360,44 +467,6 @@ Start using good keyboard shortcuts! It'll keep you sane, and let web designers 
 <a href="http://www.flickr.com/photos/matt_lee/418275873/">[image credit]</a>
 </p><p>
 <em>Note: All keyboard shortcuts tested on a Mac only. Though I assume in Windows you have similar options.</em>
-</p>
-  </div>
-</div>
-
-  <h2 class="title"><a href="/2010/05/19/chrome-web-store.html">Chrome Web Store - I like it, though I may never use it.</a></h2> 
-<div class="post post-/2010/05/19/chrome-web-store">
-  <div class="entrybody">
-    <a href="http://incompl.com/wp-content/uploads/2010/05/cwslogo-chrome.png"><img class="alignright size-full wp-image-918" title="Chrome Web Store Logo" src="http://incompl.com/wp-content/uploads/2010/05/cwslogo-chrome.png" alt="The Chrome Web Store Logo" width="251" height="46" /></a>
-<p>
-I like the idea behind the newly-announced <a href="https://chrome.google.com/webstore">Chrome Web Store</a>. It's a store for web apps, which technically aren't different from any other web sites like <a href="http://docs.google.com">Google Docs</a>. At first it feels like Google is just out to make a quick buck by mimicking Apple's successful <a href="http://www.apple.com/iphone/apps-for-iphone/">App Store</a>. However, I think something more subtle is going on here. This is a a totally different approach to making money on the web.
-</p><p>
-Every now and then I think about making money from my side projects, but I've never done it. Why? Because making money on the web is called "ads". If you're selling t-shirts you probably don't need ads, but if you want to make a website that's fun or useful on its own merits, you don't have a lot of options. <a href="http://en.wikipedia.org/wiki/Google#Advertising">Google makes 99% of its money from ads</a>. The problem? I hate ads.
-</p><p>
-Ads pit you against your users. A user's goal is just to use the app and have fun or perform some task. An advertiser's goal is to get impressions. Do you hate the new ad overlays in Youtube? We all do, but Google has to pay the bills for Youtube to be free. Ever clicked a link, only to discover it wasn't a link at all, it just triggered an irrelevant ad pop-up? They generate impressions. It's a bait and switch, but someone is willing to pay for it, and someone has to write a check to Bob's Discount Hosting at the end of the day.
-</p><p>
-Google has always known that people hate ads. That's why they've put so much work into making ads painless. Their text ads are low-bandwidth and unobtrusive. Now and then, they can even be useful. That's why Google is <a href="http://www.marketingvox.com/googles-ad-server-market-share-at-57-042692/">the clear leader in web advertising market share</a>. Though now Google is asking themselves a few questions. What would the web be like without ads? And where would Google fit into such a web?
-</p><p>
-Are there websites don't sell a more tangible product, don't have ads, and exist only to be fun or useful? Sure. <a href="http://jsregex.com">I made one</a>, but the cost to run it is negligible. What would happen if it started generating millions of views a day, and my hosting company raised my rate? I'd need to take the site down, or find a way to make money. Inevitably, this would mean slapping ads on it. Yuck. Tons of <a href="http://twitter.com/">interesting startups</a> live in the same bubble I live in. Let's just make a useful or fun app, and worry about money later, and only if we have to. With venture capital, you can live in this bubble for a long time. Sooner or later, though, reality sets in. Does this mean Twitter is going to have ads some day? Well, <a href="http://blog.twitter.com/2010/04/hello-world.html">yes</a>. They're wrapping it up in a nice package, painfully aware of how much users hate ads, but that's what they're doing. That's what you <em>have</em> to do.
-</p><p>
-This is why iPhone development is so appealing. <a href="http://www.edibleapple.com/ifart-developer-makes-40000-in-2-days/">You can make money without ads</a>. Your app is just your app. I don't understand in the least why Apple thinks creating <a href="http://developer.apple.com/technologies/iphone/whats-new.html#iAd">an ad platform for iPhone apps</a> is a good idea. They must underestimate how much people hate ads. I cringed when Steve Jobs acted genuinely excited when announcing this stuff. iPhone developers will continue to make it big when they make good software at a good price point. It's such a better way.
-</p><p>
-As you think about all this, eventually you have to ask, why don't web apps work like iPhone apps? Why are the choices "free" or "ads"? 37signals is pretty vocal in saying that <a href="http://37signals.com/svn/posts/1366-a-radical-idea-charge-people-for-your-product">you have to charge for your product</a>. That works pretty well for the small-business collaboration and project management software that 37signals makes. But it doesn't work as well the smaller the app is. On the iPhone, you can sell <a href="http://www.taptaptap.com/#convert">a nifty unit converter</a> for $0.99. On the web? Not a chance. <a href="http://www.google.com/landing/searchtips/#unitconversion">Google does it for free</a>, as do countless other sites. Even if you have the best unit converter on the entire Internet that you spent weeks on developing and doing usability studies and designing gorgeous graphics for. The Internet just doesn't sell web apps in that price range. You come across as a greedy jerk, even if you have a great product.
-</p><p>
-Can that be changed? Can we make it so that nifty bite-size web apps can be sold for a buck or two? How do you change it? Well, here are my guesses as to what you'd have to change:
-<ul>
-	<li>Safer and faster payment system. People hate putting in credit card information on some unknown website. They'd rather just pass than take the risk for a small app that isn't such a big deal after all.</li>
-	<li>Sense of ownership. A Tetris bookmark on a toolbar doesn't feel like a product. It feels the same as all the free Tetris apps out there.</li>
-	<li>Pay once. Periodic billing doesn't make sense for small apps. What is the periodic equivalent of a $0.99? $0.05 / month? It's silly. But still, not a lot of webapps work on a pay-once system. Why not? Well, at that price point, wouldn't it be easier to just throw some ads on there? A pay-once model for apps should be simpler to set up.</li>
-</ul>
-I think the Chrome Web Store is an attempt to fix these problems. You buy apps quickly and safely through Google, you get a <a href="http://code.google.com/chrome/apps/docs/index.html">nifty apps tray in Chrome</a> that makes it feel like you actually own something tangible, and you only pay once.
-</p>
-<img class="alignnone size-full wp-image-890" title="Chrome Apps Tray" src="http://incompl.com/wp-content/uploads/2010/05/tabstrip-apps.png" alt="Screen shot of Chrome's upcoming apps tray" width="584" height="84" />
-<p>
-I don't think that the Chrome Web Store is the future of web application development. On the other hand, I do think Google's efforts will make it more acceptable to make money by selling your web apps instead of by tacking on ads. Once people get used to the idea of buying access to a tic-tac-toe website, web developers will have an easier time selling such apps outside of Google's ecosystem. And that's great.
-</p><p>
-It makes me wonder what Google's perspective is on this. They're an ad empire, and here is their product supporting a different revenue model. Are they worried about what the web would be like without ads, or even, without Google? Would Google start charging for their own apps if things went this direction? You have to evolve to survive on the web, and maybe even Google needs a plan for survival.
-</p><p>
-I'm currently developing <a href="http://startcontinue.com/">a game using HTML5 technologies</a>. I always knew I'd never put ads on it, so I assumed it'd just always be free. Though now I have to wonder. Can I sell it for a buck? It's starting to look like it might be an interesting experiment.
 </p>
   </div>
 </div>

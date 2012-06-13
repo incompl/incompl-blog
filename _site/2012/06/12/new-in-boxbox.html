@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>What's new in boxbox</title>
+    <link rel="icon" type="image/png" href="http://incompl.com/images/favicon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/code.css">
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <span class="author">
+        June 12, 2012
+      </span>
+      <h1><a href="/">incompl</a></h1>
+      <h2>What's new in boxbox</h2>
+      <div class="post">
+        <div class="entrybody">
+          <p><a href='http://incompl.github.com/boxbox/'>boxbox</a>, my JavaScript framework for making 2d physics-based games with <a href='http://box2d.org/'>box2d</a>, has come a long way. If you haven&#8217;t seen it before, <a href='http://weblog.bocoup.com/introducing-boxbox/'>this tutorial</a> covers the basics. In this article I&#8217;m going to quickly cover some of what&#8217;s new and where boxbox is headed.</p>
+
+<p>I&#8217;ve been building a <a href='http://en.wikipedia.org/wiki/Castlevania'>Castlevania</a>-like platform game with boxbox, and my experience building a real game has been the main factor informing my design decisions.</p>
+
+<h3 id='making_boxbox_more_like_a_framework'>Making boxbox more like a framework</h3>
+
+<p>I&#8217;ve made the switch from calling boxbox a library to calling it a framework. boxbox is becoming more capable as the infrastructure that houses a game, rather than simply a tool to use while making a game.</p>
+
+<h4 id='init'>init</h4>
+
+<p>An interesting question I&#8217;ve considered while designing boxbox is this: when should something be an entity option, when should it be a method, and when should it be both? For example, event handlers are added via methods and currently must be attached after an entity is created. Is this ideal?</p>
+
+<p>I&#8217;m still pondering this question, so in the meantime I&#8217;ve added <code>init</code>. It&#8217;s useful in general, but it also lets me punt around this design decision by attaching event handlers in the <code>init</code> function.</p>
+<div class='highlight'><pre><code class='javascript'><span class='nx'>world</span><span class='p'>.</span><span class='nx'>createEntity</span><span class='p'>({</span>
+  <span class='nx'>init</span><span class='o'>:</span> <span class='kd'>function</span><span class='p'>()</span> <span class='p'>{</span>
+    <span class='k'>this</span><span class='p'>.</span><span class='nx'>applyImpulse</span><span class='p'>(</span><span class='mi'>10</span><span class='p'>);</span> <span class='c1'>// jump immediately after being created</span>
+  <span class='p'>}</span>
+<span class='p'>});</span>
+</code></pre>
+</div>
+<h4 id='custom_properties'>Custom properties</h4>
+
+<p>I&#8217;ve often said that a useful pattern when using boxbox would be to have your own model objects that contain boxbox entities. That way you could do your own domain logic and delegate to the boxbox entity when necessary. In practice, this sucks. As I tried it, it just felt like a bunch of extra effort that I shouldn&#8217;t have to do. What felt natural was using the boxbox entities for everything.</p>
+
+<p>After trying a few ideas, I&#8217;m currently liking what I&#8217;m calling &#8220;custom properties&#8221;. This one might seem a little odd, but hear me out, because it&#8217;s a very practical approach. When creating a boxbox entity, options that start with <code>$</code> are not treated as a boxbox options, they&#8217;re simply passed along as properties on the resulting entity.</p>
+
+<p>Here is an example of implementing a damageable object using custom properties:</p>
+<div class='highlight'><pre><code class='javascript'><span class='kd'>var</span> <span class='nx'>enemy</span> <span class='o'>=</span> <span class='nx'>world</span><span class='p'>.</span><span class='nx'>createEntity</span><span class='p'>({</span>
+  <span class='nx'>x</span><span class='o'>:</span> <span class='mi'>5</span><span class='p'>,</span> <span class='c1'>// boxbox option</span>
+  <span class='nx'>y</span><span class='o'>:</span> <span class='mi'>10</span><span class='p'>,</span> <span class='c1'>// boxbox option</span>
+  <span class='nx'>$hp</span><span class='o'>:</span> <span class='mi'>10</span><span class='p'>,</span> <span class='c1'>// custom property</span>
+  <span class='nx'>$damage</span><span class='o'>:</span> <span class='kd'>function</span><span class='p'>(</span><span class='nx'>amount</span><span class='p'>)</span> <span class='p'>{</span> <span class='c1'>// custom property (in this case, a method)</span>
+    <span class='k'>this</span><span class='p'>.</span><span class='nx'>$hp</span> <span class='o'>-=</span> <span class='nx'>amount</span><span class='p'>;</span>
+    <span class='k'>if</span> <span class='p'>(</span><span class='k'>this</span><span class='p'>.</span><span class='nx'>$hp</span> <span class='o'>&lt;=</span> <span class='mi'>0</span><span class='p'>)</span> <span class='p'>{</span>
+      <span class='k'>this</span><span class='p'>.</span><span class='nx'>destroy</span><span class='p'>();</span>
+    <span class='p'>}</span>
+  <span class='p'>}</span>
+<span class='p'>});</span>
+<span class='nx'>enemy</span><span class='p'>.</span><span class='nx'>$damage</span><span class='p'>(</span><span class='mi'>5</span><span class='p'>);</span> <span class='c1'>// entity is not destroyed</span>
+<span class='nx'>enemy</span><span class='p'>.</span><span class='nx'>$damage</span><span class='p'>(</span><span class='mi'>5</span><span class='p'>);</span> <span class='c1'>// entity is destroyed</span>
+</code></pre>
+</div>
+<p>I&#8217;m not 100% committed to this system, but so far I like using it.</p>
+
+<h3 id='patching_box2d'>Patching box2d</h3>
+
+<p>box2d has some behaviors I don&#8217;t really like. These may or may not be &#8220;bugs&#8221; but they do add complexity I&#8217;d prefer to sidestep.</p>
+
+<h4 id='events_on_destroyed_entities'>Events on destroyed entities</h4>
+
+<p>By default, box2d may continue to trigger events for entities that were recently destroyed. boxbox now prevents these events.</p>
+
+<h4 id='object_creation_in_event_handlers'>Object creation in event handlers</h4>
+
+<p>box2d does not allow object creation in event handlers. The world is &#8220;locked&#8221; at that time. This is disruptive to healthy event-driven programming patterns. boxbox will automatically queue object creation if the world is locked. So far the effect is seamless.</p>
+
+<p>This example shows an entity that creates another entity in an event handler. It&#8217;s easy to see how this could be expanded into a &#8220;respawn&#8221; system. Until recently, this code would throw an exception.</p>
+<div class='highlight'><pre><code class='javascript'><span class='kd'>var</span> <span class='nx'>enemy</span> <span class='o'>=</span> <span class='nx'>world</span><span class='p'>.</span><span class='nx'>createEntity</span><span class='p'>({</span>
+  <span class='c1'>// options here </span>
+<span class='p'>});</span>
+<span class='nx'>enemy</span><span class='p'>.</span><span class='nx'>onImpact</span><span class='p'>(</span><span class='kd'>function</span><span class='p'>()</span> <span class='p'>{</span>
+  <span class='k'>this</span><span class='p'>.</span><span class='nx'>destroy</span><span class='p'>();</span>
+  <span class='nx'>world</span><span class='p'>.</span><span class='nx'>createEntity</span><span class='p'>({</span>
+    <span class='c1'>// options here</span>
+  <span class='p'>}});</span>
+<span class='p'>});</span>
+</code></pre>
+</div>
+<h3 id='event_changes'>Event changes</h3>
+
+<h4 id='onrender'>onRender</h4>
+
+<p><code>onRender</code> isn&#8217;t new, but now it can be attached to entities as well as worlds. The value of <code>this</code> in the callback will be appropriate based on which it was attached to.</p>
+
+<h4 id='ontick'>onTick</h4>
+
+<p><code>onTick</code> is new, attachable to both entities and worlds. This allows boxbox to manage your game loop. Ticks are events that happen at a regular interval, default every 50 milliseconds, configurable with the <code>tickFrequency</code> option on your world. <code>onTick</code> is something I have thought about since boxbox was created, but I&#8217;m implementing it now due to my decision for boxbox to become a framework rather than a simple library.</p>
+
+<p>It&#8217;s important to use <code>onRender</code> only for drawing things to the canvas, while using <code>onTick</code> for game logic. <code>onRender</code> is optimized by <a href='https://developer.mozilla.org/en/DOM/window.requestAnimationFrame'>requestAnimationFrame</a> and may not occur at a constant rate, but it’s called once per frame drawn to the canvas. <code>onTick</code> is called regularly regardless of the current framerate.</p>
+
+<h3 id='rendering'>Rendering</h3>
+
+<h4 id='sprite_sheet_support'>Sprite sheet support</h4>
+
+<p>Most 2d games use sprite sheets for animation. They&#8217;re images <a href='http://www.nes-snes-sprites.com/ImagesSheet/FinalFantasy3Sheet1.gif'>like this</a> that contain all the different frames of an animation or multiple animations.</p>
+
+<p>In boxbox you can use an entity&#8217;s image as a spritesheet by adding a couple extra parameters.</p>
+<div class='highlight'><pre><code class='javascript'><span class='kd'>var</span> <span class='nx'>player</span> <span class='o'>=</span> <span class='nx'>world</span><span class='p'>.</span><span class='nx'>createEntity</span><span class='p'>({</span>
+  <span class='nx'>image</span><span class='o'>:</span> <span class='s2'>&quot;player.png&quot;</span><span class='p'>,</span>
+  <span class='nx'>spriteSheet</span><span class='o'>:</span> <span class='kc'>true</span><span class='p'>,</span>
+  <span class='nx'>spriteWidth</span><span class='o'>:</span> <span class='mi'>16</span><span class='p'>,</span> <span class='c1'>// the width, in pixels, of a single sprite</span>
+  <span class='nx'>spriteHeight</span><span class='o'>:</span> <span class='mi'>16</span> <span class='c1'>// same but height</span>
+<span class='p'>});</span>
+<span class='nx'>player</span><span class='p'>.</span><span class='nx'>sprite</span><span class='p'>(</span><span class='mi'>0</span><span class='p'>,</span> <span class='mi'>2</span><span class='p'>);</span> <span class='c1'>// set the image to column 0, row 2 in the spritesheet</span>
+</code></pre>
+</div>
+<p>You might notice that boxbox doesn&#8217;t support spritesheets that are not based on grids. That&#8217;s for simplicity, and it may change.</p>
+
+<h3 id='thats_it_for_now'>That&#8217;s it for now</h3>
+
+<p>Drop me a <a href='https://twitter.com/_gsmith'>tweet</a> if you have any comments or questions, and issues are always welcome on <a href='https://github.com/incompl/boxbox/issues?direction=desc&amp;sort=created&amp;state=open'>github</a>. Enjoy!</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
