@@ -1,6 +1,18 @@
-<h2 class="title"><a href="{{ page.url }}">{{ page.title }}</a></h2> 
-<div class="post post-{{ page.id }}">
-  <div class="entrybody">
-    {{ page.content }}
+ <div class="post clearfix post-{{ page.id }}">
+  <div class="preview-date">
+    {{ page.date | date: '%B %d, %Y' }}
   </div>
+  <h2 class="title"><a href="{{ page.url }}">{{ page.title }}</a></h2>
+  <div class="entrybody">
+    {% if page.preview == "all" %}
+      {{ page.content }}
+    {% else %}
+      {{ page.content | strip_html | truncatewords:100 }}
+    {% endif %}
+  </div>
+  {% if page.preview != "all" %}
+    <div class="read-more">
+      <a href="{{ page.url }}">read more</a>
+    </div>
+  {% endif %}
 </div>

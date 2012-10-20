@@ -24,6 +24,13 @@ h1, h2, h3 {
 
 h1 {
   font-size: 2.2em;
+  margin: 0;
+  padding: .5em 0;
+  margin-left: 1em;
+}
+
+h1 a:visited, h1 a:link {
+  background-color: transparent;
 }
 
 h2 {
@@ -65,19 +72,52 @@ a:hover {
   color: white;
 }
 
+footer a, .post a, .comments a {
+  color: black;
+  background-color: transparent;
+  text-shadow: none;
+  text-decoration: underline;
+}
+
 .highlight, blockquote {
-  margin: 1em;
+  margin: 1em 0;
   padding: 1px 1em;
-  background-color: #122526;
+  background-color: #DAE3E4;
+  line-height: 1em;
 }
 
 blockquote {
   padding: .5em 1em;
 }
 
+.highlight {
+  background-color: #222;
+}
+
 #wrapper {
   max-width: 700px;
   margin: 0 auto;
+}
+
+.post-wrapper {
+  background-color: white;
+  border-radius: 0 0 15px 15px;
+}
+
+.post-wrapper .post {
+  margin: 0 1em 1em;
+}
+
+.post-wrapper h1 a {
+  color: black;
+  text-shadow: none;
+}
+
+.post-wrapper h2 {
+  color: #00887D;
+  text-shadow: 1px 1px #333;
+  margin: .5em .8em .3em;
+  font-size: 2.5em;
 }
 
 .alignright {
@@ -93,16 +133,77 @@ img {
   margin: 1em;
 }
 
+#about-link {
+  font-size: 2.2em;
+  float: right;
+  font-family: header;
+  margin: .5em 1em 0 0;
+}
+
+#about-link a:visited, #about-link a:link {
+  background-color: transparent;
+}
+
 .post {
-  margin: 0 1em 3em;
+  background-color: white;
+  color: #333;
+  margin: 0 1em 2em;
+  padding: 1em;
+  border-radius: 15px;
+  line-height: 1.5em;
+}
+
+.post h2 {
+  margin: .5em 0;
+}
+
+.post h2 a {
+  color: #00887D;
+  text-decoration: none;
+  text-shadow: 1px 1px #333;
+}
+
+.post h3 {
+  text-decoration: none;
+}
+
+.read-more {
+  margin: 1em 0;
+}
+
+.preview-date {
+  float: right;
 }
 
 .author {
   color: #888;
   font-size: .8em;
   float: right;
+  margin: 1em 1em 0 0;
 }
 
 .pagination {
   margin: 0 0 1em;
+  text-align: center;
+}
+
+.comments {
+  margin: 0;
+  text-align: center;
+  color: #333;
+  padding: 0 0 2em;
+}
+
+footer {
+  text-align: center;
+  padding: 0 1em 1em;
+  margin: 1em 0 0;
+}
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
 }

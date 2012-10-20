@@ -17,13 +17,13 @@ It is easy to explain, but the very clear and precise answer is another thing.
 
 An object is something that has identity, state, and behavior.  Most "things" in a programming language, besides objects, only have one or two of these traits.  Depending on the language, and oversimplifying a little, we see this:
 
-Value: Just identity
-Variable: Just state
-Function: Just behavior
-Struct: Identity and state
-Subroutine: State and behavior
-Functor: Identity and behavior
-Object: All of the above
+* Value: Just identity
+* Variable: Just state
+* Function: Just behavior
+* Struct: Identity and state
+* Subroutine: State and behavior
+* Functor: Identity and behavior
+* Object: All of the above
 
 This reveals one of the elegancies of objects: they can represent any other type of "thing" in a programming language.
 

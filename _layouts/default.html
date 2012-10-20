@@ -10,8 +10,12 @@
 
   <body>
     <div id="wrapper">
+      <div id="about-link">
+        <a href="http://incompl.com">about me</a>
+      </div>
       <h1><a href="/">{{ page.title }}</a></h1>
       {{ content }}
     </div>
+    {% include footer.html %}
   </body>
 </html>
