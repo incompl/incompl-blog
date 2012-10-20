@@ -4,11 +4,14 @@
   </div>
   <h2 class="title"><a href="{{ page.url }}">{{ page.title }}</a></h2>
   <div class="entrybody">
-    {% if page.preview == "all" %}
-      {{ page.content }}
-    {% else %}
-      {{ page.content | strip_html | truncatewords:100 }}
-    {% endif %}
+    {% case page.preview %}
+      {% when "all" %}
+        {{ page.content }}
+      {% when nil %}
+        {{ page.content | strip_html | truncatewords:100 }}
+      {% else %}
+        {{ page.content | truncatewords:page.preview }}
+    {% endcase %}
   </div>
   {% if page.preview != "all" %}
     <div class="read-more">
