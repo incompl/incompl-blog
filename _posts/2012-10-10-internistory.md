@@ -9,7 +9,7 @@ status: publish
 preview: all
 ---
 
-<a href="http://internistory.incompl.com"><img class="alignright" src="/images/internistory.png" width="300"></a>
+<a href="http://internistory.incompl.com"><img class="alignright" src="/images/internistory.png"></a>
 
 At [Bocoup](http://bocoup.com) I have been teaching a training called the [HTML5 Crash Course](http://training.bocoup.com). Part of that training has been a brief overview of Internet history. It's important to set context and understand why the HTML5 revolution is big, and why it's the start of something bigger.
 

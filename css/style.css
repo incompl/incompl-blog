@@ -1,97 +1,34 @@
-@font-face {
-  font-family: 'header';
-  src: url('http://incompl.com/fonts/OSP-DIN.ttf');
-}
-
-@font-face {
-  font-family: 'body';
-  src: url('http://incompl.com/fonts/luxisr.ttf');
-}
-
 body {
   background-color: black;
   color: #EAEAEA;
   margin: 0;
   padding: 0;
-  font-family: 'body';
 }
 
-h1, h2, h3 {
-  font-size: 2em;
-  font-family: header;
-  font-weight: bold;
+body a {
+  color: white;
 }
 
 h1 {
-  font-size: 2.2em;
   margin: 0;
-  padding: .5em 0;
-  margin-left: 1em;
+  padding: 1.5rem 0 0;
+  text-shadow: 0 2px 0 #7F2C01;
 }
 
-h1 a:visited, h1 a:link {
-  background-color: transparent;
+header {
+  margin: 0 1rem;
 }
 
-h2 {
-  font-size: 2em;
-}
-
-h3 {
-  font-size: 1.5em;
-}
-
-h4 {
-  font-size: 1.1em;
-}
-
-p code {
-  font-size: 1.1em;
-}
-
-a:link {
-  color: #eaeaea;
-  background-color: #004345;
+header a {
   text-decoration: none;
-  text-shadow: 1px 1px 0 black;
-  padding: 0 1px 1px;
 }
 
-a:visited {
-  color: #eaeaea;
-  background-color: #363636;
-}
-
-a:active {
-  background-color: black;
+header a:hover {
   color: white;
 }
 
-a:hover {
-  background-color: #00877C;
-  color: white;
-}
-
-footer a, .post a, .comments a {
-  color: black;
-  background-color: transparent;
-  text-shadow: none;
-  text-decoration: underline;
-}
-
-.highlight, blockquote {
-  margin: 1em 0;
-  padding: 1px 1em;
-  background-color: #DAE3E4;
-  line-height: 1em;
-}
-
-blockquote {
-  padding: .5em 1em;
-}
-
-.highlight {
-  background-color: #222;
+#about-link {
+  margin: 0 0 1rem 0;
 }
 
 #wrapper {
@@ -99,87 +36,63 @@ blockquote {
   margin: 0 auto;
 }
 
-.post-wrapper {
-  background-color: white;
-  border-radius: 0 0 15px 15px;
-}
-
-.post-wrapper .post {
-  margin: 0 1em 1em;
-}
-
-.post-wrapper h1 a {
-  color: black;
-  text-shadow: none;
-}
-
-.post-wrapper h2 {
-  color: #00887D;
-  text-shadow: 1px 1px #333;
-  margin: .5em .8em .3em;
-  font-size: 2.5em;
-}
-
 .alignright {
   float: right;
-}
-
-a.imgLink {
-  padding: 0;
-  background-color: transparent;
+  max-width: 50%;
 }
 
 img {
   margin: 1em;
 }
 
-#about-link {
-  font-size: 2.2em;
-  float: right;
-  font-family: header;
-  margin: .5em 1em 0 0;
+.post-wrapper {
+  background-color: white;
+  border-bottom: solid #7F2C01 6px;
 }
 
-#about-link a:visited, #about-link a:link {
-  background-color: transparent;
+.post-wrapper header a {
+  color: black;
+  text-shadow: none;
 }
 
 .post {
   background-color: white;
   color: #333;
-  margin: 0 1em 2em;
+  margin: 0 1rem 2em;
   padding: 1em;
-  border-radius: 15px;
-  line-height: 1.5em;
+  border-bottom: solid #7F2C01 6px;
 }
 
-.post h2 {
-  margin: .5em 0;
+.post-wrapper .post {
+  border-bottom: none;
+  margin: 0;
+}
+
+.post-wrapper h2 {
+  color: black;
+  padding: .5em 0 0;
+}
+
+.post a {
+  color: black;
+}
+
+.post a:hover {
+  color: #7F2C01;
 }
 
 .post h2 a {
-  color: #00887D;
-  text-decoration: none;
-  text-shadow: 1px 1px #333;
-}
-
-.post h3 {
   text-decoration: none;
 }
 
-.read-more {
-  margin: 1em 0;
+.author {
+  float: right;
+  margin: .5rem 0;
+  color: #777;
 }
 
 .preview-date {
   float: right;
-}
-
-.author {
-  color: #888;
-  font-size: .8em;
-  float: right;
-  margin: 1em 1em 0 0;
 }
 
 .pagination {
@@ -188,10 +101,17 @@ img {
 }
 
 .comments {
-  margin: 0;
   text-align: center;
-  color: #333;
-  padding: 0 0 2em;
+  color: black;
+  padding: 0 0 1em;
+}
+
+.comments a {
+  color: black;
+}
+
+.comments a:hover {
+  color: #7F2C01;
 }
 
 footer {
@@ -200,10 +120,6 @@ footer {
   margin: 1em 0 0;
 }
 
-.clearfix:after {
-    content: ".";
-    display: block;
-    height: 0;
-    clear: both;
-    visibility: hidden;
+footer a:hover, .pagination a:hover {
+  color: white;
 }
