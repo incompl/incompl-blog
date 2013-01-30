@@ -21,15 +21,13 @@ In this post I'm going to talk about an up-and-coming subgenre: Complextro. I'll
 
 In 2012, [Porter Robinson](http://soundcloud.com/porter-robinson) [coined the term Complextro to describe his sound](https://twitter.com/PorterRobinson/statuses/100706347779235840) with the portmanteau of complex and electro. [BT](http://soundcloud.com/bt) figured that the term would stick as the name of the style at large, and he was right.
 
-What aspects of Robinson's sound were wrapped up into the term Complextro? Most generally, Complextro brings interesting and complex melodies and basslines to the more straightforward world of electro house. More specific is the video game influence, which for Robinson [originates from his childhood love of Dance Dance Revolution](http://online.wsj.com/article/SB10001424052702304299704577502452164796814.html). Other features associated with Complextro are [chiptune](http://en.wikipedia.org/wiki/Chiptune) sounds (another video game influence), [glitchiness](http://en.wikipedia.org/wiki/Glitch_%28music%29), and use of instruments or influences not typically found in electro house.
+What aspects of Robinson's sound were wrapped up into the term Complextro? Most generally, Complextro brings interesting and complex melodies and basslines to the more straightforward world of electro house. Often this means using lots of different synths within a short timespan of the song. More specific is the video game influence, which for Robinson [originates from his childhood love of Dance Dance Revolution](http://online.wsj.com/article/SB10001424052702304299704577502452164796814.html). Other features associated with Complextro are [chiptune](http://en.wikipedia.org/wiki/Chiptune) sounds (another video game influence), [glitchiness](http://en.wikipedia.org/wiki/Glitch_%28music%29), and use of instruments or influences not typically found in electro house.
 
-Robinson's 2011 hit *Spitfire* is probably the most prominent example of what Complextro has come to mean:
+Robinson's 2010 hit *I'm On Fire* is a good example of what Complextro has come to mean:
 
-{% youtube jgZzH1FWi24 280 210 %}
+{% youtube aU5h3wcD-m4 280 210 %}
 
-Some might argue that this is [dubstep](http://en.wikipedia.org/wiki/Dubstep), due to use of halftime beats in much of the track. But they aren't throughout, and what doesn't have some dubstep influence these days? If all else fails, use the umbrella term [Bass Music](http://en.wikipedia.org/wiki/Bass_music) for anything that blurs these lines.
-
-Althrough Robinson coined the term, he isn't the first to make music of this style. In [Wolfgang Gartner](http://soundcloud.com/wolfganggartner)'s 2009 track *Firepower*, you can hear the complextro sound with more chiptune and less dubstep:
+Althrough Robinson coined the term, he isn't the first to make music of this style. In [Wolfgang Gartner](http://soundcloud.com/wolfganggartner)'s 2009 track *Firepower*, you can hear the complextro sound with chiptune influence:
 
 {% youtube 7M7CiegyP90 280 210 %}
 
