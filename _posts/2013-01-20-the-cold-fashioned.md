@@ -6,12 +6,10 @@ tags:
 - game design
 type: post
 status: publish
-preview: 87
+preview: 83
 ---
 
-<figure style="float:right;">
-  <img style="width: 230px" src="/images/winter-maples.jpg">
-</figure>
+<img class="alignright" src="/images/winter-maples.jpg">
 
 I created this cocktail thanks to [The Flavor Bible](http://www.amazon.com/The-Flavor-Bible-Creativity-Imaginative/dp/0316118400/ref=sr_1_2?ie=UTF8&qid=1358726018&sr=8-2&keywords=the+flavor+bible). This book contains an extensive reference of ingredients with flavors that pair well with each. Some of the combinations are predictable; some are not.
 

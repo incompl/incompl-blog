@@ -6,12 +6,10 @@ tags:
 - game design
 type: post
 status: publish
-preview: 122
+preview: 115
 ---
 
-<figure style="float:right;">
-  <img style="width: 230px" src="/images/arcanum/half-ogre.jpg">
-</figure>
+<img class="alignright" src="/images/arcanum/half-ogre.jpg">
 
 In one of my favorite RPGs, [Arcanum](http://en.wikipedia.org/wiki/Arcanum:_Of_Steamworks_and_Magick_Obscura), there is a race called [half-ogres](http://www.terra-arcanum.com/sierra/world/world-races_ogrehybrids.html). That race description, taken from the manual, has some interesting (if lurid) conjecture about the origin of the race. In the Arcanum setting, half-ogres are a bit of a mystery. How could they exist? Why are they mostly male? Why are they fond of gnomes, halflings, and children?
 
@@ -51,9 +49,7 @@ It certainly did get people talking. I was happy with the quest how it was. It's
 
 Still, it's easy to understand why so many players were frustrated by this quest. In most RPGs, every problem that is presented to you is there for you to solve. Few RPGs ever say "There are trolls from the nearby cave attacking villagers!" just for flavor. They would certainly never say that without presenting you with a convenient nearby cave, trolls about your level, and well-balanced experience and gold reward for your efforts.
 
-<figure style="float:right;">
-  <img style="width: 200px" src="/images/arcanum/elf.jpg">
-</figure>
+<img class="alignright" src="/images/arcanum/elf.jpg">
 
 Few RPGs take place in a dystopian fantasy world without giving you the opportunity to spend 80 hours getting to level 50 so you can defeat the evil god-king and bring peace to the galaxy. Players have come to expect that their enjoyment in a game should come from conquering, manipulating, and owning the game world. It exists just for them, after all.
 

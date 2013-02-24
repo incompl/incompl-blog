@@ -6,12 +6,10 @@ tags:
 - music
 type: post
 status: publish
-preview: 77
+preview: 74
 ---
 
-<span style="float: right;">
-  <a href="http://www.flickr.com/photos/mixtribe/8033550926/"><img src="/images/complextro.png"></a>
-</span>
+<a href="http://www.flickr.com/photos/mixtribe/8033550926/"><img class="alignright" src="/images/complextro.png"></a>
 
 I've been following the evolution of Electronic Dance Music (EDM) for many years, and it's always fun to watch the trends that come and go since they ebb and flow so quickly. It's still a young style of music, and I'm always craving something new.
 

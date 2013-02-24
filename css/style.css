@@ -1,5 +1,5 @@
 body {
-  background-color: black;
+  background-color: rgb(26, 26, 26);
   color: #EAEAEA;
   margin: 0;
   padding: 0;
@@ -12,7 +12,6 @@ body a {
 h1 {
   margin: 0;
   padding: 1.5rem 0 0;
-  text-shadow: 0 2px 0 #7F2C01;
 }
 
 header {
@@ -38,7 +37,7 @@ header a:hover {
 
 .alignright {
   float: right;
-  max-width: 50%;
+  max-width: 40%;
 }
 
 img {
@@ -47,7 +46,7 @@ img {
 
 .post-wrapper {
   background-color: white;
-  border-bottom: solid #7F2C01 6px;
+  border-bottom: solid #FF7F00 6px;
 }
 
 .post-wrapper header a {
@@ -60,7 +59,7 @@ img {
   color: #333;
   margin: 0 1rem 2em;
   padding: 1em;
-  border-bottom: solid #7F2C01 6px;
+  border-bottom: solid #FF7F00 6px;
 }
 
 .post-wrapper .post {
@@ -74,21 +73,31 @@ img {
 }
 
 .post a {
-  color: black;
+  color: #7E160A;
 }
 
 .post a:hover {
-  color: #7F2C01;
+  background-color: #FFC8C2;
 }
 
 .post h2 a {
   text-decoration: none;
+  color: black;
+  text-shadow: 2px 2px 0 rgb(255, 213, 173);
+}
+
+.post h2 a:hover {
+  background-color: #FFDCB8;
+}
+
+.entrybody {
+  overflow: auto;
 }
 
 .author {
   float: right;
   margin: .5rem 0;
-  color: #777;
+  color: #444;
 }
 
 .preview-date {
@@ -107,11 +116,11 @@ img {
 }
 
 .comments a {
-  color: black;
+  color: #7E160A;
 }
 
 .comments a:hover {
-  color: #7F2C01;
+  background-color: #FFC8C2;
 }
 
 .highlight pre {
@@ -135,6 +144,11 @@ footer {
   margin: 1em 0 0;
 }
 
+footer a, .pagination a {
+  color: #ccc;
+}
+
 footer a:hover, .pagination a:hover {
-  color: white;
+  color: #ccc;
+  background-color: #333;
 }
