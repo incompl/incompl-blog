@@ -83,7 +83,6 @@ img {
 .post h2 a {
   text-decoration: none;
   color: black;
-  text-shadow: 2px 2px 0 rgb(255, 213, 173);
 }
 
 .post h2 a:hover {
