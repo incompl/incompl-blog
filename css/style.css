@@ -64,6 +64,7 @@ img {
   margin: 0 1rem 2em;
   padding: 1em;
   border-bottom: solid #FF7F00 6px;
+  overflow: hidden;
 }
 
 .post-wrapper .post {
