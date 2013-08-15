@@ -1,22 +1,14 @@
 --- 
 layout: post
-title: "The Cost of Annoying Ads"
+title: "A fix for orientation change of unzoomable webapps on iOS"
 published: true
 tags: 
-- the web
+- javascript
 type: post
 status: publish
 preview: all
 ---
 
-Check out this [Microsoft Research paper on the cost of annoying ads](http://www.dangoldstein.com/papers/goldstein_mcafee_suri_annoying_ads.pdf). Here are some quotes from the conclusion:
+Orientation change on iOS is a known problem, and [the popular solution](https://github.com/scottjehl/iOS-Orientationchange-Fix) is useful for normal websites, but not fixed, unzoomable games. Of course I can't let that stop me though, so here is [ios-reorient](https://github.com/incompl/ios-reorient/), my solution for games that let you change between landscape and portrait mode on iOS devices.
 
-> The main result of this paper is that annoying ads lead to site abandonment and thus fewer impressions than good ads or no ads. In what might be seen as good news for publishers, good ads and no ads led to roughly equal numbers of impressions. Annoying ads impaired people's ability to carry out an email classification task, suggesting that annoying ads have a real cost to users beyond mere annoyance.
-
-> ...we expect that our finding that annoying ads cost the user at least $1 CPM over more pleasant ads will be obtained in some other environments.
-
-(CPM is [cost per thousand impressions](http://en.wikipedia.org/wiki/Cost_per_impression))
-
-> This work also suggests a variety of policy recommendations. Most directly, the $1 CPM user cost... is a reason that publishers should insist on a substantial premium for annoying advertisements.
-
-Great data, though my policy recommendation is [a little stronger](http://webadvertisingisbroken.com/).
+The only other solution I've seen is [dubious](http://stackoverflow.com/a/12114397/1096165). [This Stackoverflow thread](http://stackoverflow.com/questions/2581957/iphone-safari-does-not-auto-scale-back-down-on-portrait-landscape-portrait) has a highly-rated answer that seems to solve an unrelated problem. Have you seen any other approaches to this problem? Let me know!
