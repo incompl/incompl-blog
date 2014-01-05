@@ -1,4 +1,6 @@
 {
+  "name": "incompl-blog",
+  "version": "0.1.0",
   "devDependencies": {
     "grunt": "~0.4.2",
     "grunt-ftp-deploy": "~0.1.1",
